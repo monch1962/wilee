@@ -75,18 +75,15 @@ func readTestJson() TestRequest {
 		log.Println("Error reading content from stdin")
 		panic(err)
 	}
-	var pj TestRequest
-	err = json.Unmarshal(j, &pj)
+	var tr TestRequest
+	err = json.Unmarshal(j, &tr)
 	if err != nil {
 		log.Println("Error parsing content read from stdin")
 		log.Printf("%v\n", string(j))
 		panic(err)
 	}
-	//log.Printf("Go struct: %v", pj)
-	//formattedInput, _ := json.MarshalIndent(pj, "", "  ")
-	//log.Printf("Input JSON: %+v\n", string(formattedInput))
 
-	return pj
+	return tr
 }
 
 func populateRequest(testCaseRequest TestRequest) (TestInfo, Request, Expect) {
@@ -133,12 +130,28 @@ func executeRequest(request Request) (interface{}, interface{}, int, time.Durati
 	if err != nil {
 		log.Fatalln(err)
 	}
-	//log.Printf("Response body\n%v\n", v)
+	//log.Printf("v\n%v\n", v)
 	headers := resp.Header
-	//log.Print("Response headers\n%v\n", headers)
 	httpCode := resp.StatusCode
 	latency := endTime
 	return v, headers, httpCode, latency
+}
+
+func populateResponse(body interface{}, headers interface{}, httpCode int, latency time.Duration) Actual {
+	var actual Actual
+	actual.HttpCode = httpCode
+	actual.LatencyMS = int64(latency / time.Millisecond)
+
+	bodyStr, _ := json.Marshal(body)
+	log.Printf("bodyStr\n%v\n", string(bodyStr))
+	actual.Body = string(bodyStr)
+	//b1, _ := json.MarshalIndent(bodyStr, "", "  ")
+	//actual.Body = string(b1)
+
+	//headerStr, _ := json.Marshal(headers)
+	//actual.Headers = string(headerStr)
+
+	return actual
 }
 
 func main() {
@@ -151,14 +164,8 @@ func main() {
 	body, headers, httpCode, latency := executeRequest(request)
 	log.Printf("Response body\n%v\n", body)
 	log.Printf("Response headers\n%v\n", headers)
-	log.Printf("Response code\n%v\n", httpCode)
-	log.Printf("Response latency\n%v\n", int64(latency/time.Millisecond))
 
-	var actual Actual
-	actual.HttpCode = httpCode
-	//actual.Body = body.(string)
-	//actual.Headers = headers
-	actual.LatencyMS = int64(latency / time.Millisecond)
+	actual := populateResponse(body, headers, httpCode, latency)
 
 	testresult := &TestResult{
 		PassFail:  "pass",
