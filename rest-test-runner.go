@@ -43,10 +43,10 @@ type Expect struct {
 }
 
 type Actual struct {
-	HttpCode  int      `json:"http_code"`
-	LatencyMS int64    `json:"latency_ms"`
-	Headers   []Header `json:"headers"`
-	Body      string   `json:"body"`
+	HttpCode  int    `json:"http_code"`
+	LatencyMS int64  `json:"latency_ms"`
+	Headers   string `json:"headers"`
+	Body      string `json:"body"`
 }
 
 type TestResult struct {
@@ -148,8 +148,8 @@ func populateResponse(body interface{}, headers interface{}, httpCode int, laten
 	//b1, _ := json.MarshalIndent(bodyStr, "", "  ")
 	//actual.Body = string(b1)
 
-	//headerStr, _ := json.Marshal(headers)
-	//actual.Headers = string(headerStr)
+	headerStr, _ := json.Marshal(headers)
+	actual.Headers = string(headerStr)
 
 	return actual
 }
