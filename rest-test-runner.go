@@ -43,7 +43,7 @@ type Expect struct {
 }
 
 type Actual struct {
-	HttpCode  int64    `json:"http_code"`
+	HttpCode  int      `json:"http_code"`
 	LatencyMS int64    `json:"latency_ms"`
 	Headers   []Header `json:"headers"`
 	Body      string   `json:"body"`
@@ -113,13 +113,15 @@ func populateRequest(testCaseRequest TestRequest) (TestInfo, Request, Expect) {
 	return *testinfo, *request, *expect
 }
 
-func executeRequest(request Request) (interface{}, interface{}, int) {
+func executeRequest(request Request) (interface{}, interface{}, int, time.Duration) {
 	httpClient := &http.Client{}
 	req, err := http.NewRequest(request.Verb, request.Url, nil)
 	if err != nil {
 		log.Fatalln(err)
 	}
+	startTime := time.Now()
 	resp, err := httpClient.Do(req)
+	endTime := time.Since(startTime)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -135,7 +137,8 @@ func executeRequest(request Request) (interface{}, interface{}, int) {
 	headers := resp.Header
 	//log.Print("Response headers\n%v\n", headers)
 	httpCode := resp.StatusCode
-	return v, headers, httpCode
+	latency := endTime
+	return v, headers, httpCode, latency
 }
 
 func main() {
@@ -145,10 +148,17 @@ func main() {
 
 	testinfo, request, expect := populateRequest(testCaseRequest)
 
-	body, headers, httpCode := executeRequest(request)
+	body, headers, httpCode, latency := executeRequest(request)
 	log.Printf("Response body\n%v\n", body)
 	log.Printf("Response headers\n%v\n", headers)
 	log.Printf("Response code\n%v\n", httpCode)
+	log.Printf("Response latency\n%v\n", int64(latency/time.Millisecond))
+
+	var actual Actual
+	actual.HttpCode = httpCode
+	//actual.Body = body.(string)
+	//actual.Headers = headers
+	actual.LatencyMS = int64(latency / time.Millisecond)
 
 	testresult := &TestResult{
 		PassFail:  "pass",
@@ -156,6 +166,7 @@ func main() {
 		Request:   request,
 		TestInfo:  testinfo,
 		Expect:    expect,
+		Actual:    actual,
 	}
 
 	testresultJSON, _ := json.MarshalIndent(testresult, "", "  ")
