@@ -7,7 +7,7 @@
   },
   "request": {
     "verb": "GET",
-    "url": "https://jsonplaceholder.typicode.clm/posts/1"
+    "url": "https://jsonplaceholder.typicode.com/posts/1"
   },
   "expect": {
     "max_latency_ms": 120000,

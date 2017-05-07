@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"time"
 )
@@ -82,17 +83,13 @@ func readTestJson() TestRequest {
 		panic(err)
 	}
 	//log.Printf("Go struct: %v", pj)
-	formattedInput, _ := json.MarshalIndent(pj, "", "  ")
-	log.Printf("Input JSON: %+v\n", string(formattedInput))
+	//formattedInput, _ := json.MarshalIndent(pj, "", "  ")
+	//log.Printf("Input JSON: %+v\n", string(formattedInput))
 
 	return pj
 }
 
-func main() {
-	testCaseRequest := readTestJson()
-
-	log.Printf("testCase:\n%+v\n", testCaseRequest)
-
+func populateRequest(testCaseRequest TestRequest) (TestInfo, Request, Expect) {
 	testinfo := &TestInfo{
 		Id:          testCaseRequest.TestInfo.Id,
 		Description: testCaseRequest.TestInfo.Description,
@@ -113,13 +110,52 @@ func main() {
 		Headers:      testCaseRequest.Expect.Headers,
 		Body:         testCaseRequest.Expect.Body,
 	}
+	return *testinfo, *request, *expect
+}
+
+func executeRequest(request Request) (interface{}, interface{}, int) {
+	httpClient := &http.Client{}
+	req, err := http.NewRequest(request.Verb, request.Url, nil)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer resp.Body.Close()
+	log.Printf("Response body\n%v\n", resp.Body)
+	responseDecoder := json.NewDecoder(resp.Body)
+	var v interface{} // Not sure what the response will look like, so just implement an interface
+	err = responseDecoder.Decode(&v)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	//log.Printf("Response body\n%v\n", v)
+	headers := resp.Header
+	//log.Print("Response headers\n%v\n", headers)
+	httpCode := resp.StatusCode
+	return v, headers, httpCode
+}
+
+func main() {
+	testCaseRequest := readTestJson()
+
+	log.Printf("testCase:\n%+v\n", testCaseRequest)
+
+	testinfo, request, expect := populateRequest(testCaseRequest)
+
+	body, headers, httpCode := executeRequest(request)
+	log.Printf("Response body\n%v\n", body)
+	log.Printf("Response headers\n%v\n", headers)
+	log.Printf("Response code\n%v\n", httpCode)
 
 	testresult := &TestResult{
 		PassFail:  "pass",
 		Timestamp: time.Now().Local().Format(time.RFC3339),
-		Request:   *request,
-		TestInfo:  *testinfo,
-		Expect:    *expect,
+		Request:   request,
+		TestInfo:  testinfo,
+		Expect:    expect,
 	}
 
 	testresultJSON, _ := json.MarshalIndent(testresult, "", "  ")
