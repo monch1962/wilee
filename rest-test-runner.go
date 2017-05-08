@@ -52,12 +52,13 @@ type actual struct {
 }
 
 type testResult struct {
-	PassFail  string   `json:"pass_fail"`
-	Timestamp string   `json:"timestamp"`
-	TestInfo  testInfo `json:"test_info"`
-	Request   request  `json:"request"`
-	Expect    expect   `json:"expect"`
-	Actual    actual   `json:"actual"`
+	PassFail       string   `json:"pass_fail"`
+	PassFailReason string   `json:"pass_fail_reason"`
+	Timestamp      string   `json:"timestamp"`
+	TestInfo       testInfo `json:"test_info"`
+	Request        request  `json:"request"`
+	Expect         expect   `json:"expect"`
+	Actual         actual   `json:"actual"`
 }
 
 type testRequest struct {
@@ -166,23 +167,23 @@ func populateResponse(body interface{}, headers interface{}, httpCode int, laten
 // compareActualVersusExpected compares the actual response against the
 // expected response, and returns a boolean indicating whether the match was
 // good or bad
-func compareActualVersusExpected(actual actual, expect expect) bool {
+func compareActualVersusExpected(actual actual, expect expect) (bool, string) {
 	//log.Printf("expect.HTTPCode:%d\n", expect.HTTPCode)
 	if expect.HTTPCode != 0 {
 		if expect.HTTPCode != actual.HTTPCode {
-			return false
+			return false, "actual.HTTPCode doesn't match"
 		}
 	}
 	if expect.MaxLatencyMS != 0 {
 		if expect.MaxLatencyMS < actual.LatencyMS {
-			return false
+			return false, "actual.latency_ms > expect.max_latency_ms"
 		}
 	}
 	switch expect.ParseAs {
 	case "":
 		// if there's no parser defined, return false; this is a viable approach
 		// for simply collecting info about an API response but not a test case
-		return false
+		return false, "expect.parse_as not defined"
 	case "regex":
 		// we want to parse the actual content against regex patterns that are defined
 		// in the "expected" part of the test case
@@ -199,24 +200,27 @@ func compareActualVersusExpected(actual actual, expect expect) bool {
 			log.Printf("actual[%s]->%v\n", k, actualValue)
 			log.Printf("actual.(type): %T\n", actualValue)
 
-			r, _ := regexp.Compile(expectRegex.(string))
+			r, err := regexp.Compile(expectRegex.(string))
+			if err != nil {
+				log.Fatalf("Error compiling regex for expect.%s", k)
+			}
 			switch actualValue.(type) {
 			case int:
 				if r.MatchString(string(actualValue.(int))) != true {
-					return false
+					return false, "expect.* doesn't match actual.*"
 				}
 			case float64:
 				if r.MatchString(fmt.Sprintf("%f", actualValue.(float64))) != true {
-					return false
+					return false, ""
 				}
 			case string:
 				if r.MatchString(string(actualValue.(string))) != true {
-					return false
+					return false, ""
 				}
 			}
 		}
 
-		return true
+		return true, ""
 	case "exact_match":
 		// we want the actual response to be an exact match to the "expected" part of
 		// the test case. If there are extra fields in the actual response to what's
@@ -232,7 +236,7 @@ func compareActualVersusExpected(actual actual, expect expect) bool {
 			//log.Printf("actual[%s]->%v\n", k, actualValue)
 			if expectValue != actualValue {
 				//log.Printf("expectValue != actualValue: %v -> %v", expectValue, actualValue)
-				return false
+				return false, ""
 			}
 		}
 		for k, expectValue := range actualBodyStruct.(map[string]interface{}) {
@@ -241,10 +245,10 @@ func compareActualVersusExpected(actual actual, expect expect) bool {
 			//log.Printf("actual[%s]->%v\n", k, actualValue)
 			if expectValue != actualValue {
 				//log.Printf("expectValue != actualValue: %v -> %v", expectValue, actualValue)
-				return false
+				return false, ""
 			}
 		}
-		return true
+		return true, ""
 	case "partial_match":
 		// we want the actual response fields to be an exact match to the "expected" fields
 		// defined in the test case, but the "expected" fields may not contain all the fields in
@@ -261,10 +265,10 @@ func compareActualVersusExpected(actual actual, expect expect) bool {
 			//log.Printf("actual[%s]->%v\n", k, actualValue)
 			if expectValue != actualValue {
 				//log.Printf("expectValue != actualValue: %v -> %v", expectValue, actualValue)
-				return false
+				return false, ""
 			}
 		}
-		return true
+		return true, ""
 	default:
 		panic("expect.parse_as should be one of 'regex', 'exact_match', 'partial_match'")
 	}
@@ -286,17 +290,19 @@ func main() {
 
 	// then check whether the "response" matches what was expected
 	var passFail = "fail"
-	if compareActualVersusExpected(actual, expect) {
+	matchSuccess, passFailReason := compareActualVersusExpected(actual, expect)
+	if matchSuccess {
 		passFail = "pass"
 	}
 
 	testresult := &testResult{
-		PassFail:  passFail,
-		Timestamp: time.Now().Local().Format(time.RFC3339),
-		Request:   request,
-		TestInfo:  testinfo,
-		Expect:    expect,
-		Actual:    actual,
+		PassFail:       passFail,
+		PassFailReason: passFailReason,
+		Timestamp:      time.Now().Local().Format(time.RFC3339),
+		Request:        request,
+		TestInfo:       testinfo,
+		Expect:         expect,
+		Actual:         actual,
 	}
 
 	testresultJSON, err := json.MarshalIndent(testresult, "", "  ")
