@@ -276,25 +276,27 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string) {
 
 func main() {
 
-	// first read the JSON test request from stdin
+	// read the JSON test request from stdin
 	testCaseRequest := readTestJSON()
 
-	// then populate the the "request" content that will eventually be sent to stdout
+	// populate the the "request" content that will eventually be sent to stdout
 	testinfo, request, expect := populateRequest(testCaseRequest)
 
-	// then execute the request, and capture the response body, headers, http status and latency
+	// execute the request, and capture the response body, headers, http status and latency
 	body, headers, httpCode, latency := executeRequest(request)
 
-	// then populate the "response" content that will eventually be sent to stdout
+	// populate the "response" content that will eventually be sent to stdout
 	actual := populateResponse(body, headers, httpCode, latency)
 
-	// then check whether the "response" matches what was expected
+	// check whether the "response" matches what was expected, which defines whether
+	// the test run passed or failed
 	var passFail = "fail"
 	matchSuccess, passFailReason := compareActualVersusExpected(actual, expect)
 	if matchSuccess {
 		passFail = "pass"
 	}
 
+	// construct the output JSON
 	testresult := &testResult{
 		PassFail:       passFail,
 		PassFailReason: passFailReason,
@@ -305,9 +307,12 @@ func main() {
 		Actual:         actual,
 	}
 
+	// make the output JSON look pretty
 	testresultJSON, err := json.MarshalIndent(testresult, "", "  ")
 	if err != nil {
 		panic("Unable to display output as JSON")
 	}
+
+	// send the output JSON to stdout
 	fmt.Printf("%+v\n", string(testresultJSON))
 }
