@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"regexp"
 	"time"
 )
 
@@ -196,9 +197,23 @@ func compareActualVersusExpected(actual actual, expect expect) bool {
 			log.Printf("expect[%s]->%v\n", k, expectRegex)
 			actualValue := b.(map[string]interface{})[k]
 			log.Printf("actual[%s]->%v\n", k, actualValue)
-			//if match, _ := regexp.MatchString(expectRegex, actualValue); match != true {
-			//	return false
-			//}
+			log.Printf("actual.(type): %T\n", actualValue)
+
+			r, _ := regexp.Compile(expectRegex.(string))
+			switch actualValue.(type) {
+			case int:
+				if r.MatchString(string(actualValue.(int))) != true {
+					return false
+				}
+			case float64:
+				if r.MatchString(fmt.Sprintf("%f", actualValue.(float64))) != true {
+					return false
+				}
+			case string:
+				if r.MatchString(string(actualValue.(string))) != true {
+					return false
+				}
+			}
 		}
 
 		return true
