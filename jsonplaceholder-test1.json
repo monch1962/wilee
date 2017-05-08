@@ -1,0 +1,12 @@
+{
+  "test_info": {
+    "id": "get users",
+    "description": "Test hitting jsonplaceholder JSON API",
+    "version": "1",
+    "author": "David Mitchell"
+  },
+  "request": {
+    "verb": "GET",
+    "url": "https://jsonplaceholder.typicode.com/users"
+  }
+}
