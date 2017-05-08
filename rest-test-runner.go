@@ -64,12 +64,9 @@ type testRequest struct {
 	Expect   expect   `json:"expect"`
 }
 
-/*type TestInput struct {
-	testinfo TestInfo //`json:"test_info"`
-}*/
-
+// readTestJSON reads JSON input from stdin and returns it as a formatted Go
+// struct
 func readTestJSON() testRequest {
-	// Read JSON input from stdin and return as a formatted Go struct
 	j, err := ioutil.ReadAll(os.Stdin)
 	if err != nil {
 		log.Println("Error reading content from stdin")
@@ -78,7 +75,7 @@ func readTestJSON() testRequest {
 	var tr testRequest
 	err = json.Unmarshal(j, &tr)
 	if err != nil {
-		log.Println("Error parsing content read from stdin")
+		log.Println("Error parsing content read from stdin as JSON")
 		log.Printf("%v\n", string(j))
 		panic(err)
 	}
@@ -110,6 +107,8 @@ func populateRequest(testCaseRequest testRequest) (testInfo, request, expect) {
 	return *testinfo, *request, *expect
 }
 
+// executeRequest executes the JSON request defined in the test case, and captures & returns
+// the response body, response headers, HTTP status and latency
 func executeRequest(request request) (interface{}, interface{}, int, time.Duration) {
 	httpClient := &http.Client{}
 	req, err := http.NewRequest(request.Verb, request.URL, nil)
@@ -123,7 +122,6 @@ func executeRequest(request request) (interface{}, interface{}, int, time.Durati
 		log.Fatalln(err)
 	}
 	defer resp.Body.Close()
-	//log.Printf("Response body\n%v\n", resp.Body)
 	responseDecoder := json.NewDecoder(resp.Body)
 	var v interface{} // Not sure what the response will look like, so just implement an interface
 	err = responseDecoder.Decode(&v)
@@ -143,19 +141,27 @@ func populateResponse(body interface{}, headers interface{}, httpCode int, laten
 	actual.LatencyMS = int64(latency / time.Millisecond)
 
 	var bodyStr json.RawMessage
-	bodyStr, _ = json.Marshal(body)
+	bodyStr, err := json.Marshal(body)
+	if err != nil {
+		panic("Unable to parse response body as JSON")
+	}
 	//log.Printf("bodyStr\n%v\n", string(bodyStr))
 	actual.Body = bodyStr
 
 	var headerStr json.RawMessage
-	headerStr, _ = json.Marshal(headers)
+	headerStr, err = json.Marshal(headers)
+	if err != nil {
+		panic("Unable to parse response headers as JSON")
+	}
 	actual.Headers = headerStr
 
 	return actual
 }
+
+// compareActualVersusExpected compares the actual response against the
+// expected response, and returns a boolean indicating whether the match was
+// good or bad
 func compareActualVersusExpected(actual actual, expect expect) bool {
-	// compare the actual response against the expected response, and return a
-	// boolean indicating whether the match is good or bad
 
 	switch expect.ParseAs {
 	case "":
@@ -163,10 +169,18 @@ func compareActualVersusExpected(actual actual, expect expect) bool {
 		// for simply collecting info about an API response but not a test case
 		return false
 	case "regex":
+		// we want to parse the actual content against regex patterns that are defined
+		// in the "expected" part of the test case
 		return true
 	case "exact_match":
+		// we want the actual response to be an exact match to the "expected" part of
+		// the test case. If there are extra fields in the actual response to what's
+		// defined in "expected", then the test should fail
 		return false
 	case "partial_match":
+		// we want the actual response fields to be an exact match to the "expected" fields
+		// defined in the test case, but the "expected" fields may not contain all the fields in
+		// the actual response
 		return false
 	default:
 		panic("expect.parse_as should be one of 'regex', 'exact_match', 'partial_match'")
@@ -174,17 +188,23 @@ func compareActualVersusExpected(actual actual, expect expect) bool {
 }
 
 func main() {
+
+	// first read the JSON test request from stdin
 	testCaseRequest := readTestJSON()
 
+	// then populate the the "request" content that will eventually be sent to stdout
 	testinfo, request, expect := populateRequest(testCaseRequest)
+
+	// then execute the request, and capture the response body, headers, http status and latency
 	body, headers, httpCode, latency := executeRequest(request)
+
+	// then populate the "response" content that will eventually be sent to stdout
 	actual := populateResponse(body, headers, httpCode, latency)
 
-	var passFail string
+	// then check whether the "response" matches what was expected
+	var passFail = "fail"
 	if compareActualVersusExpected(actual, expect) {
 		passFail = "pass"
-	} else {
-		passFail = "fail"
 	}
 
 	testresult := &testResult{
@@ -196,6 +216,9 @@ func main() {
 		Actual:    actual,
 	}
 
-	testresultJSON, _ := json.MarshalIndent(testresult, "", "  ")
+	testresultJSON, err := json.MarshalIndent(testresult, "", "  ")
+	if err != nil {
+		panic("Unable to display output as JSON")
+	}
 	fmt.Printf("%+v\n", string(testresultJSON))
 }
