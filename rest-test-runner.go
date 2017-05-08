@@ -136,26 +136,25 @@ func executeRequest(request request) (interface{}, interface{}, int, time.Durati
 }
 
 func populateResponse(body interface{}, headers interface{}, httpCode int, latency time.Duration) actual {
-	var actual actual
-	actual.HTTPCode = httpCode
-	actual.LatencyMS = int64(latency / time.Millisecond)
+	var actualResponse actual
+	actualResponse.HTTPCode = httpCode
+	actualResponse.LatencyMS = int64(latency / time.Millisecond)
 
 	var bodyStr json.RawMessage
 	bodyStr, err := json.Marshal(body)
 	if err != nil {
 		panic("Unable to parse response body as JSON")
 	}
-	//log.Printf("bodyStr\n%v\n", string(bodyStr))
-	actual.Body = bodyStr
+	actualResponse.Body = bodyStr
 
 	var headerStr json.RawMessage
 	headerStr, err = json.Marshal(headers)
 	if err != nil {
 		panic("Unable to parse response headers as JSON")
 	}
-	actual.Headers = headerStr
+	actualResponse.Headers = headerStr
 
-	return actual
+	return actualResponse
 }
 
 // compareActualVersusExpected compares the actual response against the
