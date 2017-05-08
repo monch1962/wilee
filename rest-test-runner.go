@@ -142,16 +142,24 @@ func populateResponse(body interface{}, headers interface{}, httpCode int, laten
 	actual.HttpCode = httpCode
 	actual.LatencyMS = int64(latency / time.Millisecond)
 
-	bodyStr, _ := json.Marshal(body)
+	var bodyStr json.RawMessage
+	bodyStr, _ = json.Marshal(body)
 	log.Printf("bodyStr\n%v\n", string(bodyStr))
 	actual.Body = string(bodyStr)
 	//b1, _ := json.MarshalIndent(bodyStr, "", "  ")
 	//actual.Body = string(b1)
 
-	headerStr, _ := json.Marshal(headers)
+	var headerStr json.RawMessage
+	headerStr, _ = json.Marshal(headers)
 	actual.Headers = string(headerStr)
 
 	return actual
+}
+
+func compareActualVersusExpected(actual Actual, expect Expect) bool {
+	// compare the actual response against the expected response, and return a
+	// boolean indicating whether the match is good or not
+	return true
 }
 
 func main() {
@@ -167,8 +175,15 @@ func main() {
 
 	actual := populateResponse(body, headers, httpCode, latency)
 
+	var passFail string
+	if compareActualVersusExpected(actual, expect) {
+		passFail = "pass"
+	} else {
+		passFail = "fail"
+	}
+
 	testresult := &TestResult{
-		PassFail:  "pass",
+		PassFail:  passFail,
 		Timestamp: time.Now().Local().Format(time.RFC3339),
 		Request:   request,
 		TestInfo:  testinfo,
