@@ -43,10 +43,10 @@ type Expect struct {
 }
 
 type Actual struct {
-	HttpCode  int    `json:"http_code"`
-	LatencyMS int64  `json:"latency_ms"`
-	Headers   string `json:"headers"`
-	Body      string `json:"body"`
+	HttpCode  int             `json:"http_code"`
+	LatencyMS int64           `json:"latency_ms"`
+	Headers   json.RawMessage `json:"headers"`
+	Body      json.RawMessage `json:"body"`
 }
 
 type TestResult struct {
@@ -145,13 +145,11 @@ func populateResponse(body interface{}, headers interface{}, httpCode int, laten
 	var bodyStr json.RawMessage
 	bodyStr, _ = json.Marshal(body)
 	log.Printf("bodyStr\n%v\n", string(bodyStr))
-	actual.Body = string(bodyStr)
-	//b1, _ := json.MarshalIndent(bodyStr, "", "  ")
-	//actual.Body = string(b1)
+	actual.Body = bodyStr
 
 	var headerStr json.RawMessage
 	headerStr, _ = json.Marshal(headers)
-	actual.Headers = string(headerStr)
+	actual.Headers = headerStr
 
 	return actual
 }
@@ -159,6 +157,9 @@ func populateResponse(body interface{}, headers interface{}, httpCode int, laten
 func compareActualVersusExpected(actual Actual, expect Expect) bool {
 	// compare the actual response against the expected response, and return a
 	// boolean indicating whether the match is good or not
+	if expect.ParseAs == "regex" {
+		return false
+	}
 	return true
 }
 
