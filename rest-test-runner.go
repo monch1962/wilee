@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"strings"
 	"time"
 )
 
@@ -17,11 +18,12 @@ type header struct {
 }
 
 type testInfo struct {
-	ID          string `json:"id"`
-	Description string `json:"description"`
-	Version     string `json:"version"`
-	DateUpdated string `json:"date_uploaded"`
-	Author      string `json:"author"`
+	ID          string   `json:"id"`
+	Description string   `json:"description"`
+	Version     string   `json:"version"`
+	DateUpdated string   `json:"date_uploaded"`
+	Author      string   `json:"author"`
+	Tags        []string `json:"tags"`
 	//Content json.RawMessage `json:"content"`
 }
 
@@ -61,54 +63,69 @@ type testResult struct {
 	Actual         actual   `json:"actual"`
 }
 
-type testRequest struct {
+type testCase struct {
 	TestInfo testInfo `json:"test_info"`
-	Request  request  `json:"request"`
-	Expect   expect   `json:"expect"`
+	//TODO: StubConfig
+	Request request `json:"request"`
+	Expect  expect  `json:"expect"`
 }
 
-// readTestJSON reads JSON input from stdin and returns it as a formatted Go
+// readTestCaseJSON reads a JSON testcase from stdin and returns it as a formatted Go
 // struct
-func readTestJSON() testRequest {
+func readTestCaseJSON() testCase {
 	j, err := ioutil.ReadAll(os.Stdin)
 	if err != nil {
 		log.Println("Error reading content from stdin")
 		panic(err)
 	}
-	var tr testRequest
-	err = json.Unmarshal(j, &tr)
+	var ti testCase
+	err = json.Unmarshal(j, &ti)
 	if err != nil {
 		log.Println("Error parsing content read from stdin as JSON")
 		log.Printf("%v\n", string(j))
 		panic(err)
 	}
 
-	return tr
+	return ti
+}
+
+// if the test case requires stub configuration, do so
+func configureStubEngine(testCase) {
+	stubEngine := os.Getenv("STUB_ENGINE")
+	log.Printf("Sending configuration to stub engine %v\n", stubEngine)
+	switch strings.ToUpper(stubEngine) {
+	case "MONTEBANK":
+		log.Println("Stub engine is Montebank")
+	case "STUBBY":
+		log.Println("Stub engine is Stubby")
+	default:
+		log.Printf("Don't know what to do for stub engine '%v'\n", stubEngine)
+	}
 }
 
 // populateRequest takes the content of the test case and parses it into
 // the JSON fragment that will eventually be returned from the test run
-func populateRequest(testCaseRequest testRequest) (testInfo, request, expect) {
+func populateRequest(tc testCase) (testInfo, request, expect) {
 	testinfo := &testInfo{
-		ID:          testCaseRequest.TestInfo.ID,
-		Description: testCaseRequest.TestInfo.Description,
-		Version:     testCaseRequest.TestInfo.Version,
-		DateUpdated: testCaseRequest.TestInfo.DateUpdated,
-		Author:      testCaseRequest.TestInfo.Author,
-		//Content: testCaseRequest.TestInfo.Content,
+		ID:          tc.TestInfo.ID,
+		Description: tc.TestInfo.Description,
+		Version:     tc.TestInfo.Version,
+		DateUpdated: tc.TestInfo.DateUpdated,
+		Author:      tc.TestInfo.Author,
+		//Content: tc.TestInfo.Content,
 	}
 
 	request := &request{
-		Verb: testCaseRequest.Request.Verb,
-		URL:  testCaseRequest.Request.URL,
+		Verb: tc.Request.Verb,
+		URL:  tc.Request.URL,
 	}
 
 	expect := &expect{
-		ParseAs:      testCaseRequest.Expect.ParseAs,
-		HTTPCode:     testCaseRequest.Expect.HTTPCode,
-		MaxLatencyMS: testCaseRequest.Expect.MaxLatencyMS,
-		Headers:      testCaseRequest.Expect.Headers,
-		Body:         testCaseRequest.Expect.Body,
+		ParseAs:      tc.Expect.ParseAs,
+		HTTPCode:     tc.Expect.HTTPCode,
+		MaxLatencyMS: tc.Expect.MaxLatencyMS,
+		Headers:      tc.Expect.Headers,
+		Body:         tc.Expect.Body,
 	}
 	return *testinfo, *request, *expect
 }
@@ -276,11 +293,17 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string) {
 
 func main() {
 
-	// read the JSON test request from stdin
-	testCaseRequest := readTestJSON()
+	// read the JSON test case from stdin
+	tc := readTestCaseJSON()
+
+	// if there's a stub to be configured, do so
+	if os.Getenv("STUB_ENGINE") != "" {
+		log.Println("STUB_ENGINE configured")
+		configureStubEngine(tc)
+	}
 
 	// populate the the "request" content that will eventually be sent to stdout
-	testinfo, request, expect := populateRequest(testCaseRequest)
+	testinfo, request, expect := populateRequest(tc)
 
 	// execute the request, and capture the response body, headers, http status and latency
 	body, headers, httpCode, latency := executeRequest(request)

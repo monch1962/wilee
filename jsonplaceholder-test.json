@@ -1,9 +1,23 @@
 {
+  "_comment": "Need to define $APP as IP, $STUB as IP, $SYSTEM1_STUB_PORT as TCP port",
+  "stub_setup": [
+    {
+      "verb:": "POST",
+      "url": "https://$STUB:$SYSTEM1_STUB_PORT/endpoint1/",
+      "headers": [],
+      "payload": {
+      }
+    }
+  ],
   "test_info": {
     "id": "get posts/1",
     "description": "Test hitting jsonplaceholder JSON API",
     "version": "1",
-    "author": "David Mitchell"
+    "author": "David Mitchell",
+    "tags": [
+      "integration",
+      "tc1234"
+    ]
   },
   "request": {
     "verb": "GET",
