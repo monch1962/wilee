@@ -1,5 +1,10 @@
 package main
 
+// Test runner for functional tests defined as JSON documents
+// Expects the following environment variables to be defined:
+// APP = target server for requests e.g. "https://SERVER:PORT"
+// STUB_ENGINE = type of stub engine e.g. "stubby", "montebank"
+
 import (
 	"encoding/json"
 	"fmt"
@@ -117,7 +122,7 @@ func populateRequest(tc testCase) (testInfo, request, expect) {
 
 	request := &request{
 		Verb: tc.Request.Verb,
-		URL:  tc.Request.URL,
+		URL:  os.Getenv("APP") + tc.Request.URL,
 	}
 
 	expect := &expect{
