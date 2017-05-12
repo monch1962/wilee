@@ -8,14 +8,17 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-What things you need to install the software and how to install them
+You'll probably want to define a set of environment variables before executing tests using JSON test runner.
+
+An important one is to set the target app server that you wish to test
 
 ```
 APP="https://server:port"
 ```
-JSON test runner supports sending per-test configuration to a stub engine. This configuration is included in the JSON test configuration. To use this, set the stub engine type (currently supports "stubby" and "montebank")
+JSON test runner supports sending per-test configuration to a stub engine. This configuration is included in the JSON test configuration. To use this, set the stub engine type (currently supports "stubby" and "montebank") and either the DNS name or IP address of the stub server
 ```
 STUB_ENGINE="montebank"
+STUB_SERVER="IP address"
 ```
 ### Installing
 
