@@ -7,6 +7,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -78,21 +79,17 @@ type testCase struct {
 
 // readTestCaseJSON reads a JSON testcase from an io.Reader and returns it as a formatted Go
 // struct
-func readTestCaseJSON(input io.Reader) testCase {
+func readTestCaseJSON(input io.Reader) (testCase, error) {
 	j, err := ioutil.ReadAll(input)
-	if err != nil {
-		log.Println("Error reading content from stdin")
-		panic(err)
-	}
 	var ti testCase
+	if err != nil {
+		return ti, errors.New("Error reading JSON test case content")
+	}
 	err = json.Unmarshal(j, &ti)
 	if err != nil {
-		log.Println("Error parsing content read from stdin as JSON")
-		log.Printf("%v\n", string(j))
-		panic(err)
+		return ti, errors.New("Error parsing content as JSON")
 	}
-
-	return ti
+	return ti, nil
 }
 
 // if the test case requires stub configuration, do so
@@ -300,7 +297,10 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string) {
 func main() {
 
 	// read the JSON test case from stdin
-	tc := readTestCaseJSON(os.Stdin)
+	tc, err := readTestCaseJSON(os.Stdin)
+	if err != nil {
+		panic("Unable to read test case JSON input")
+	}
 
 	// if there's a stub to be configured, do so
 	if os.Getenv("STUB_ENGINE") != "" {

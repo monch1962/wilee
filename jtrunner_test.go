@@ -12,7 +12,11 @@ func TestLoadValidJSON(t *testing.T) {
 		t.Logf("test data file %v not found", testJSONfile)
 		t.Fail()
 	}
-	_ = readTestCaseJSON(fileHandle)
+	_, err = readTestCaseJSON(fileHandle)
+	if err != nil {
+		t.Logf("Unable to parse test data file %v as JSON", testJSONfile)
+		t.Fail()
+	}
 }
 
 func TestLoadInvalidJSON(t *testing.T) {
