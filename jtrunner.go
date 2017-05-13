@@ -108,7 +108,7 @@ func configureStubEngine(testCase) {
 
 // populateRequest takes the content of the test case and parses it into
 // the JSON fragment that will eventually be returned from the test run
-func populateRequest(tc testCase) (testInfo, request, expect) {
+func populateRequest(tc testCase) (testInfo, request, expect, error) {
 	testinfo := &testInfo{
 		ID:          tc.TestInfo.ID,
 		Description: tc.TestInfo.Description,
@@ -130,7 +130,7 @@ func populateRequest(tc testCase) (testInfo, request, expect) {
 		Headers:      tc.Expect.Headers,
 		Body:         tc.Expect.Body,
 	}
-	return *testinfo, *request, *expect
+	return *testinfo, *request, *expect, nil
 }
 
 // executeRequest executes the JSON request defined in the test case, and captures & returns
@@ -309,7 +309,11 @@ func main() {
 	}
 
 	// populate the the "request" content that will eventually be sent to stdout
-	testinfo, request, expect := populateRequest(tc)
+	testinfo, request, expect, err := populateRequest(tc)
+	if err != nil {
+		log.Println("Unable to parse test request info out of test case")
+		os.Exit(1)
+	}
 
 	// execute the request, and capture the response body, headers, http status and latency
 	body, headers, httpCode, latency := executeRequest(request)
