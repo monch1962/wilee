@@ -1,11 +1,32 @@
 {
-  "_comment": "Need to define $APP as IP, $STUB as IP, $SYSTEM1_STUB_PORT as TCP port",
-  "stub_setup": [
+  "_comment": "Need to define $APP as IP $STUB_ENGINE as 'montebank' or 'stubby'",
+  "stubs": [
     {
-      "verb:": "POST",
-      "url": "https://$STUB:$SYSTEM1_STUB_PORT/endpoint1/",
-      "headers": [],
-      "payload": {
+      "stubbed_system": "ABC",
+      "stub_request": {
+        "verb:": "POST",
+        "url": "/endpoint1",
+        "headers": [],
+        "payload" : {}
+      },
+      "stub_response": {
+        "code": 200,
+        "headers": [],
+        "payload": {}
+      }
+    },
+    {
+      "stubbed_system": "ABC",
+      "stub_request": {
+        "verb:": "GET",
+        "url": "/endpoint1",
+        "headers": [],
+        "payload" : {}
+      },
+      "stub_response": {
+        "code": 200,
+        "headers": [],
+        "payload": {}
       }
     }
   ],

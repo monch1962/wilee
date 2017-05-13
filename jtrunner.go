@@ -156,6 +156,10 @@ func executeRequest(request request) (interface{}, interface{}, int, time.Durati
 		log.Fatalln(err)
 	}
 	//log.Printf("v\n%v\n", v)
+	log.Println(resp.Header)
+	for i := range resp.Header {
+		log.Printf("%v->%v\n", i, resp.Header[i][0])
+	}
 	headers := resp.Header
 	httpCode := resp.StatusCode
 	latency := endTime

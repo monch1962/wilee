@@ -7,6 +7,6 @@
   },
   "request": {
     "verb": "GET",
-    "url": "https://jsonplaceholder.typicode.com/users"
+    "url": "/users"
   }
 }
