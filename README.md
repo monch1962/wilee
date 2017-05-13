@@ -1,4 +1,4 @@
-# JSON test runner
+# jtrunner (JSON test runner)
 
 App designed to execute REST API functional test cases that have been encoded as JSON documents
 

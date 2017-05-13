@@ -135,11 +135,12 @@ func populateRequest(tc testCase) (testInfo, request, expect, error) {
 
 // executeRequest executes the JSON request defined in the test case, and captures & returns
 // the response body, response headers, HTTP status and latency
-func executeRequest(request request) (interface{}, interface{}, int, time.Duration) {
+func executeRequest(request request) (interface{}, interface{}, int, time.Duration, error) {
 	httpClient := &http.Client{}
 	req, err := http.NewRequest(request.Verb, request.URL, nil)
 	if err != nil {
-		log.Fatalln(err)
+		return nil, nil, 0, 0, errors.New("Unable to parse HTTP request")
+		//log.Fatalln(err)
 	}
 	startTime := time.Now()
 	resp, err := httpClient.Do(req)
@@ -158,11 +159,11 @@ func executeRequest(request request) (interface{}, interface{}, int, time.Durati
 	headers := resp.Header
 	httpCode := resp.StatusCode
 	latency := endTime
-	return v, headers, httpCode, latency
+	return v, headers, httpCode, latency, nil
 }
 
 // populateResponse takes info about the response and populates the "response" fragment of the JSON output
-func populateResponse(body interface{}, headers interface{}, httpCode int, latency time.Duration) actual {
+func populateResponse(body interface{}, headers interface{}, httpCode int, latency time.Duration) (actual, error) {
 	var actualResponse actual
 	actualResponse.HTTPCode = httpCode
 	actualResponse.LatencyMS = int64(latency / time.Millisecond)
@@ -170,40 +171,40 @@ func populateResponse(body interface{}, headers interface{}, httpCode int, laten
 	var bodyStr json.RawMessage
 	bodyStr, err := json.Marshal(body)
 	if err != nil {
-		panic("Unable to parse response body as JSON")
+		return actualResponse, errors.New("Unable to parse response body as JSON")
 	}
 	actualResponse.Body = bodyStr
 
 	var headerStr json.RawMessage
 	headerStr, err = json.Marshal(headers)
 	if err != nil {
-		panic("Unable to parse response headers as JSON")
+		return actualResponse, errors.New("Unable to parse response headers as JSON")
 	}
 	actualResponse.Headers = headerStr
 
-	return actualResponse
+	return actualResponse, nil
 }
 
 // compareActualVersusExpected compares the actual response against the
 // expected response, and returns a boolean indicating whether the match was
 // good or bad
-func compareActualVersusExpected(actual actual, expect expect) (bool, string) {
+func compareActualVersusExpected(actual actual, expect expect) (bool, string, error) {
 	//log.Printf("expect.HTTPCode:%d\n", expect.HTTPCode)
 	if expect.HTTPCode != 0 {
 		if expect.HTTPCode != actual.HTTPCode {
-			return false, "actual.HTTPCode doesn't match"
+			return false, "actual.HTTPCode doesn't match", nil
 		}
 	}
 	if expect.MaxLatencyMS != 0 {
 		if expect.MaxLatencyMS < actual.LatencyMS {
-			return false, "actual.latency_ms > expect.max_latency_ms"
+			return false, "actual.latency_ms > expect.max_latency_ms", nil
 		}
 	}
 	switch expect.ParseAs {
 	case "":
 		// if there's no parser defined, return false; this is a viable approach
 		// for simply collecting info about an API response but not a test case
-		return false, "expect.parse_as not defined"
+		return false, "expect.parse_as not defined", nil
 	case "regex":
 		// we want to parse the actual content against regex patterns that are defined
 		// in the "expected" part of the test case
@@ -211,7 +212,7 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string) {
 		var b interface{}
 		err := json.Unmarshal(actual.Body, &b)
 		if err != nil {
-			panic("Unable to parse actual.Body")
+			return false, "", errors.New("Unable to parse actual.Body")
 		}
 		//log.Printf("actual.Body:%v\n", b)
 		for k, expectRegex := range expect.Body.(map[string]interface{}) {
@@ -227,20 +228,20 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string) {
 			switch actualValue.(type) {
 			case int:
 				if r.MatchString(string(actualValue.(int))) != true {
-					return false, "expect.* doesn't match actual.*"
+					return false, "expect.* doesn't match actual.*", nil
 				}
 			case float64:
 				if r.MatchString(fmt.Sprintf("%f", actualValue.(float64))) != true {
-					return false, ""
+					return false, "", nil
 				}
 			case string:
 				if r.MatchString(string(actualValue.(string))) != true {
-					return false, ""
+					return false, "", nil
 				}
 			}
 		}
 
-		return true, ""
+		return true, "", nil
 	case "exact_match":
 		// we want the actual response to be an exact match to the "expected" part of
 		// the test case. If there are extra fields in the actual response to what's
@@ -256,7 +257,7 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string) {
 			//log.Printf("actual[%s]->%v\n", k, actualValue)
 			if expectValue != actualValue {
 				//log.Printf("expectValue != actualValue: %v -> %v", expectValue, actualValue)
-				return false, ""
+				return false, "", nil
 			}
 		}
 		for k, expectValue := range actualBodyStruct.(map[string]interface{}) {
@@ -265,10 +266,10 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string) {
 			//log.Printf("actual[%s]->%v\n", k, actualValue)
 			if expectValue != actualValue {
 				//log.Printf("expectValue != actualValue: %v -> %v", expectValue, actualValue)
-				return false, ""
+				return false, "", nil
 			}
 		}
-		return true, ""
+		return true, "", nil
 	case "partial_match":
 		// we want the actual response fields to be an exact match to the "expected" fields
 		// defined in the test case, but the "expected" fields may not contain all the fields in
@@ -285,12 +286,12 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string) {
 			//log.Printf("actual[%s]->%v\n", k, actualValue)
 			if expectValue != actualValue {
 				//log.Printf("expectValue != actualValue: %v -> %v", expectValue, actualValue)
-				return false, ""
+				return false, "", nil
 			}
 		}
-		return true, ""
+		return true, "", nil
 	default:
-		panic("expect.parse_as should be one of 'regex', 'exact_match', 'partial_match'")
+		return false, "", errors.New("expect.parse_as should be one of 'regex', 'exact_match', 'partial_match'")
 	}
 }
 
@@ -317,15 +318,27 @@ func main() {
 	}
 
 	// execute the request, and capture the response body, headers, http status and latency
-	body, headers, httpCode, latency := executeRequest(request)
+	body, headers, httpCode, latency, err := executeRequest(request)
+	if err != nil {
+		log.Println("Unable to execute HTTP request")
+		os.Exit(1)
+	}
 
 	// populate the "response" content that will eventually be sent to stdout
-	actual := populateResponse(body, headers, httpCode, latency)
+	actual, err := populateResponse(body, headers, httpCode, latency)
+	if err != nil {
+		log.Println("Unable to populate HTTP response JSON")
+		os.Exit(1)
+	}
 
 	// check whether the "response" matches what was expected, which defines whether
 	// the test run passed or failed
 	var passFail = "fail"
-	matchSuccess, passFailReason := compareActualVersusExpected(actual, expect)
+	matchSuccess, passFailReason, err := compareActualVersusExpected(actual, expect)
+	if err != nil {
+		log.Println("Unable to compare actual response vs. expected response")
+		os.Exit(1)
+	}
 	if matchSuccess {
 		passFail = "pass"
 	}
