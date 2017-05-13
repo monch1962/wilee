@@ -299,7 +299,8 @@ func main() {
 	// read the JSON test case from stdin
 	tc, err := readTestCaseJSON(os.Stdin)
 	if err != nil {
-		panic("Unable to read test case JSON input")
+		log.Println("Unable to read test case JSON input")
+		os.Exit(1)
 	}
 
 	// if there's a stub to be configured, do so
