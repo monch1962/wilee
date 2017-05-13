@@ -8,6 +8,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -75,10 +76,10 @@ type testCase struct {
 	Expect  expect  `json:"expect"`
 }
 
-// readTestCaseJSON reads a JSON testcase from stdin and returns it as a formatted Go
+// readTestCaseJSON reads a JSON testcase from an io.Reader and returns it as a formatted Go
 // struct
-func readTestCaseJSON() testCase {
-	j, err := ioutil.ReadAll(os.Stdin)
+func readTestCaseJSON(input io.Reader) testCase {
+	j, err := ioutil.ReadAll(input)
 	if err != nil {
 		log.Println("Error reading content from stdin")
 		panic(err)
@@ -299,7 +300,7 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string) {
 func main() {
 
 	// read the JSON test case from stdin
-	tc := readTestCaseJSON()
+	tc := readTestCaseJSON(os.Stdin)
 
 	// if there's a stub to be configured, do so
 	if os.Getenv("STUB_ENGINE") != "" {

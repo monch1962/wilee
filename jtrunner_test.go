@@ -1,9 +1,18 @@
 package main
 
-import "testing"
+import (
+	"os"
+	"testing"
+)
 
 func TestLoadValidJSON(t *testing.T) {
-	t.Fail()
+	testJSONfile := "test-data/jsonplaceholder-test.json"
+	fileHandle, err := os.Open(testJSONfile)
+	if err != nil {
+		t.Logf("test data file %v not found", testJSONfile)
+		t.Fail()
+	}
+	_ = readTestCaseJSON(fileHandle)
 }
 
 func TestLoadInvalidJSON(t *testing.T) {
