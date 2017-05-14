@@ -149,14 +149,14 @@ func executeRequest(request request) (interface{}, interface{}, int, time.Durati
 	resp, err := httpClient.Do(req)
 	endTime := time.Since(startTime)
 	if err != nil {
-		log.Fatalln(err)
+		return nil, nil, 0, 0, errors.New("Unable to execute HTTP request")
 	}
 	defer resp.Body.Close()
 	responseDecoder := json.NewDecoder(resp.Body)
 	var v interface{} // Not sure what the response will look like, so just implement an interface
 	err = responseDecoder.Decode(&v)
 	if err != nil {
-		log.Fatalln(err)
+		return nil, nil, 0, 0, errors.New("Unable to parse HTTP response body as JSON")
 	}
 	//log.Printf("v\n%v\n", v)
 	log.Println(resp.Header)
