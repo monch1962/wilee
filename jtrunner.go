@@ -264,7 +264,7 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 			//log.Printf("actual[%s]->%v\n", k, actualValue)
 			if expectValue != actualValue {
 				//log.Printf("expectValue != actualValue: %v -> %v", expectValue, actualValue)
-				return false, "", nil
+				return false, "expectValue != actualValue", nil
 			}
 		}
 		for k, expectValue := range actualBodyStruct.(map[string]interface{}) {
@@ -273,7 +273,7 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 			//log.Printf("actual[%s]->%v\n", k, actualValue)
 			if expectValue != actualValue {
 				//log.Printf("expectValue != actualValue: %v -> %v", expectValue, actualValue)
-				return false, "", nil
+				return false, "expectValue != actualValue", nil
 			}
 		}
 		return true, "", nil
@@ -293,7 +293,7 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 			//log.Printf("actual[%s]->%v\n", k, actualValue)
 			if expectValue != actualValue {
 				//log.Printf("expectValue != actualValue: %v -> %v", expectValue, actualValue)
-				return false, "", nil
+				return false, "expectValue != actualValue", nil
 			}
 		}
 		return true, "", nil
