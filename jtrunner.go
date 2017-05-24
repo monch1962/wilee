@@ -14,8 +14,10 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -159,10 +161,10 @@ func executeRequest(request request) (interface{}, interface{}, int, time.Durati
 		return nil, nil, 0, 0, errors.New("Unable to parse HTTP response body as JSON")
 	}
 	//log.Printf("v\n%v\n", v)
-	log.Println(resp.Header)
-	for i := range resp.Header {
-		log.Printf("%v->%v\n", i, resp.Header[i][0])
-	}
+	//log.Println(resp.Header)
+	//for i := range resp.Header {
+	//log.Printf("%v->%v\n", i, resp.Header[i][0])
+	//}
 	headers := resp.Header
 	httpCode := resp.StatusCode
 	latency := endTime
@@ -256,7 +258,7 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 		var actualBodyStruct interface{}
 		err := json.Unmarshal(actual.Body, &actualBodyStruct)
 		if err != nil {
-			panic("Unable to parse actual.Body")
+			//panic("Unable to parse actual.Body")
 		}
 		for k, expectValue := range expect.Body.(map[string]interface{}) {
 			//log.Printf("expect[%s]->%v\n", k, expectValue)
@@ -285,7 +287,7 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 		var b interface{}
 		err := json.Unmarshal(actual.Body, &b)
 		if err != nil {
-			panic("Unable to parse actual.Body")
+			//panic("Unable to parse actual.Body")
 		}
 		for k, expectValue := range expect.Body.(map[string]interface{}) {
 			//log.Printf("expect[%s]->%v\n", k, expectValue)
@@ -302,10 +304,9 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 	}
 }
 
-func main() {
-
-	// read the JSON test case from stdin
-	tc, err := readTestCaseJSON(os.Stdin)
+func executeTestCase(testFile *os.File, resultsFile *os.File) {
+	// read the JSON test case from file
+	tc, err := readTestCaseJSON(testFile)
 	if err != nil {
 		log.Println("Unable to read test case JSON input")
 		os.Exit(1)
@@ -364,9 +365,46 @@ func main() {
 	// make the output JSON look pretty
 	testresultJSON, err := json.MarshalIndent(testresult, "", "  ")
 	if err != nil {
-		panic("Unable to display output as JSON")
+		//panic("Unable to display output as JSON")
 	}
 
 	// send the output JSON to stdout
-	fmt.Printf("%+v\n", string(testresultJSON))
+	//fmt.Printf("%+v\n", string(testresultJSON))
+	resultsFile.WriteString(string(testresultJSON))
+}
+
+func executeTestCaseInWaitGroup(testFile *os.File, resultsFile *os.File, wg *sync.WaitGroup) {
+	defer wg.Done()
+	executeTestCase(testFile, resultsFile)
+}
+
+func main() {
+	if os.Getenv("TESTCASE") != "" {
+		testcases := os.Getenv("TESTCASE")
+		testCaseFilesGlob, _ := filepath.Glob(testcases)
+		//log.Printf("Test cases to execute: %v\n", testCaseFilesGlob)
+		numTestCases := len(testCaseFilesGlob)
+		log.Printf("# test cases to execute = %d\n", numTestCases)
+
+		var wg sync.WaitGroup
+		//wg.Add(numTestCases)
+		for _, testCaseFile := range testCaseFilesGlob {
+			log.Printf("Running test case from file: %v\n", testCaseFile)
+			fTestCase, err := os.Open(testCaseFile)
+			if err != nil {
+				log.Printf("Error opening test case file %v\n", testCaseFile)
+			}
+			testResultsFile := testCaseFile + ".result.json"
+			fTestResults, err := os.Create(testResultsFile)
+			if err != nil {
+				log.Printf("Error opening test case results file %v\n", testResultsFile)
+			}
+			wg.Add(1)
+			go executeTestCaseInWaitGroup(fTestCase, fTestResults, &wg)
+		}
+		wg.Wait()
+		//time.Sleep(5 * time.Second)
+	} else {
+		executeTestCase(os.Stdin, os.Stdout)
+	}
 }

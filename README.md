@@ -20,6 +20,11 @@ JSON test runner supports sending per-test configuration to a stub engine. This 
 STUB_ENGINE="montebank"
 STUB_SERVER="IP address"
 ```
+
+JSON test runner can either read a single test case from stdin and write results to stdout (where they can be processed by e.g. jq), or you can supply a set of test cases to be executed. In the latter case, all test cases will be executed simultaneously
+```
+TESTCASE=test-data/jsonplaceholder-test[0124].json
+```
 ### Installing
 
 A step by step series of examples that tell you have to get a development env running
