@@ -4,6 +4,7 @@ package main
 // Expects the following environment variables to be defined:
 // APP = target server for requests e.g. "https://SERVER:PORT"
 // STUB_ENGINE = type of stub engine e.g. "stubby", "montebank"
+// TESTCASE (optional) = regex for a set of test case JSON files
 
 import (
 	"encoding/json"
@@ -368,8 +369,7 @@ func executeTestCase(testFile *os.File, resultsFile *os.File) {
 		//panic("Unable to display output as JSON")
 	}
 
-	// send the output JSON to stdout
-	//fmt.Printf("%+v\n", string(testresultJSON))
+	// send the output JSON to resultsFile
 	resultsFile.WriteString(string(testresultJSON))
 }
 
@@ -380,14 +380,18 @@ func executeTestCaseInWaitGroup(testFile *os.File, resultsFile *os.File, wg *syn
 
 func main() {
 	if os.Getenv("TESTCASE") != "" {
+		// filenames for test cases to run are contained in the env var TESTCASE
+		// which can contain regexes
 		testcases := os.Getenv("TESTCASE")
 		testCaseFilesGlob, _ := filepath.Glob(testcases)
-		//log.Printf("Test cases to execute: %v\n", testCaseFilesGlob)
 		numTestCases := len(testCaseFilesGlob)
 		log.Printf("# test cases to execute = %d\n", numTestCases)
 
+		// we're going to run all these test cases in parallel in separate
+		// goroutines...
+		// ... but we also want to wait till all of them have finished before
+		// exiting so we define a WaitGroup
 		var wg sync.WaitGroup
-		//wg.Add(numTestCases)
 		for _, testCaseFile := range testCaseFilesGlob {
 			log.Printf("Running test case from file: %v\n", testCaseFile)
 			fTestCase, err := os.Open(testCaseFile)
@@ -399,12 +403,17 @@ func main() {
 			if err != nil {
 				log.Printf("Error opening test case results file %v\n", testResultsFile)
 			}
+
+			// add this new test case to the wait group
 			wg.Add(1)
 			go executeTestCaseInWaitGroup(fTestCase, fTestResults, &wg)
 		}
+
+		// wait here till all test cases have finished executing
 		wg.Wait()
-		//time.Sleep(5 * time.Second)
 	} else {
+		// no testcase files supplied in env var TESTCASE
+		// read a single test case from stdin, and write test results to stdout
 		executeTestCase(os.Stdin, os.Stdout)
 	}
 }
