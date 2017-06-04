@@ -187,10 +187,14 @@ func executeRequest(request request) (interface{}, interface{}, int, time.Durati
 	if err != nil {
 		return nil, nil, 0, 0, errors.New("Unable to parse HTTP response body as JSON")
 	}
-	log.Printf("v\n%v\n", v)
-	log.Println(resp.Header)
-	for i := range resp.Header {
-		log.Printf("%v->%v\n", i, resp.Header[i][0])
+	if os.Getenv("DEBUG") != "" {
+		log.Printf("v\n%v\n", v)
+		log.Println(resp.Header)
+	}
+	if os.Getenv("DEBUG") != "" {
+		for i := range resp.Header {
+			log.Printf("%v->%v\n", i, resp.Header[i][0])
+		}
 	}
 	headers := resp.Header
 	httpCode := resp.StatusCode
@@ -250,16 +254,21 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 		if err != nil {
 			return false, "", errors.New("Unable to parse actual.Body")
 		}
-		log.Printf("actual.Body:%s\n\n", actual.Body)
-		log.Printf("actualBodyStruct: %v\n", actualBodyStruct)
+		if os.Getenv("DEBUG") != "" {
+			log.Printf("actual.Body:%s\n\n", actual.Body)
+			log.Printf("actualBodyStruct: %v\n", actualBodyStruct)
+		}
 		if expect.Body != nil {
 			for k, expectRegex := range expect.Body.(map[string]interface{}) {
-				log.Printf("expect[%s]->%v\n", k, expectRegex)
+				if os.Getenv("DEBUG") != "" {
+					log.Printf("expect[%s]->%v\n", k, expectRegex)
+				}
 
 				actualValue := actualBodyStruct.(map[string]interface{})[k]
-
-				log.Printf("actual[%s]->%v\n", k, actualValue)
-				log.Printf("actual.(type): %T\n", actualValue)
+				if os.Getenv("DEBUG") != "" {
+					log.Printf("actual[%s]->%v\n", k, actualValue)
+					log.Printf("actual.(type): %T\n", actualValue)
+				}
 
 				r, err := regexp.Compile(expectRegex.(string))
 				if err != nil {
