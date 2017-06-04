@@ -190,8 +190,7 @@ func executeRequest(request request) (interface{}, interface{}, int, time.Durati
 	if os.Getenv("DEBUG") != "" {
 		log.Printf("v\n%v\n", v)
 		log.Println(resp.Header)
-	}
-	if os.Getenv("DEBUG") != "" {
+
 		for i := range resp.Header {
 			log.Printf("%v->%v\n", i, resp.Header[i][0])
 		}
