@@ -37,6 +37,30 @@ type testInfo struct {
 	//Content json.RawMessage `json:"content"`
 }
 
+type stubRequest struct {
+	Verb    string   `json:"verb"`
+	URL     string   `json:"url"`
+	Headers []header `json: "headers"`
+	Payload payload  `json:"payload"`
+}
+
+type stubResponse struct {
+	LatencyMS int64       `json:"latency_ms"`
+	HTTPCode  int         `json:"http_code"`
+	Headers   []header    `json:"headers"`
+	Body      interface{} `json:"body"`
+}
+
+type stubEntry struct {
+	Request  stubRequest  `json:"request"`
+	Response stubResponse `json:"response"`
+}
+
+type stubInfo struct {
+	StubPort  int         `json:"stub_port"`
+	StubEntry []stubEntry `json:"stub_entries"`
+}
+
 type payload struct {
 	Headers []header `json:"headers"`
 	Body    string   `json:"body"`
@@ -71,10 +95,12 @@ type testResult struct {
 	Request        request  `json:"request"`
 	Expect         expect   `json:"expect"`
 	Actual         actual   `json:"actual"`
+	StubInfo       stubInfo `json:"stub_info"`
 }
 
 type testCase struct {
-	TestInfo testInfo `json:"test_info"`
+	TestInfo testInfo   `json:"test_info"`
+	StubInfo []stubInfo `json:"stub_info"`
 	//TODO: StubConfig
 	Request request `json:"request"`
 	Expect  expect  `json:"expect"`
@@ -219,34 +245,39 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 		// we want to parse the actual content against regex patterns that are defined
 		// in the "expected" part of the test case
 		//log.Printf("expect.Body:%v\n", expect.Body)
-		var b interface{}
-		err := json.Unmarshal(actual.Body, &b)
+		var actualBodyStruct interface{}
+		err := json.Unmarshal(actual.Body, &actualBodyStruct)
 		if err != nil {
 			return false, "", errors.New("Unable to parse actual.Body")
 		}
-		//log.Printf("actual.Body:%v\n", b)
-		for k, expectRegex := range expect.Body.(map[string]interface{}) {
-			log.Printf("expect[%s]->%v\n", k, expectRegex)
-			actualValue := b.(map[string]interface{})[k]
-			log.Printf("actual[%s]->%v\n", k, actualValue)
-			log.Printf("actual.(type): %T\n", actualValue)
+		log.Printf("actual.Body:%s\n\n", actual.Body)
+		log.Printf("actualBodyStruct: %v\n", actualBodyStruct)
+		if expect.Body != nil {
+			for k, expectRegex := range expect.Body.(map[string]interface{}) {
+				log.Printf("expect[%s]->%v\n", k, expectRegex)
 
-			r, err := regexp.Compile(expectRegex.(string))
-			if err != nil {
-				log.Fatalf("Error compiling regex for expect.%s", k)
-			}
-			switch actualValue.(type) {
-			case int:
-				if r.MatchString(string(actualValue.(int))) != true {
-					return false, "expect.* doesn't match actual.*", nil
+				actualValue := actualBodyStruct.(map[string]interface{})[k]
+
+				log.Printf("actual[%s]->%v\n", k, actualValue)
+				log.Printf("actual.(type): %T\n", actualValue)
+
+				r, err := regexp.Compile(expectRegex.(string))
+				if err != nil {
+					log.Fatalf("Error compiling regex for expect.%s", k)
 				}
-			case float64:
-				if r.MatchString(fmt.Sprintf("%f", actualValue.(float64))) != true {
-					return false, "", nil
-				}
-			case string:
-				if r.MatchString(string(actualValue.(string))) != true {
-					return false, "", nil
+				switch actualValue.(type) {
+				case int:
+					if r.MatchString(string(actualValue.(int))) != true {
+						return false, "expect.* doesn't match actual.*", nil
+					}
+				case float64:
+					if r.MatchString(fmt.Sprintf("%f", actualValue.(float64))) != true {
+						return false, "", nil
+					}
+				case string:
+					if r.MatchString(string(actualValue.(string))) != true {
+						return false, "", nil
+					}
 				}
 			}
 		}

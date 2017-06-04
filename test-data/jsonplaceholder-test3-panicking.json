@@ -12,8 +12,9 @@
   "expect": {
     "max_latency_ms": 120000,
     "parse_as": "regex",
-    "body": {
+    "http_code": 200,
+    "_comment_body": [{
       "id": "\\d+"
-    }
+    }]
   }
 }
