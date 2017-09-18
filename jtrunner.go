@@ -3,7 +3,6 @@ package main
 // Test runner for functional tests defined as JSON documents
 // Expects the following environment variables to be defined:
 // APP = target server for requests e.g. "https://SERVER:PORT"
-// STUB_ENGINE = type of stub engine e.g. "stubby", "montebank"
 // TESTCASE (optional) = regex for a set of test case JSON files
 
 import (
@@ -17,7 +16,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strings"
 	"sync"
 	"time"
 )
@@ -35,30 +33,6 @@ type testInfo struct {
 	Author      string   `json:"author"`
 	Tags        []string `json:"tags"`
 	//Content json.RawMessage `json:"content"`
-}
-
-type stubRequest struct {
-	Verb    string   `json:"verb"`
-	URL     string   `json:"url"`
-	Headers []header `json: "headers"`
-	Payload payload  `json:"payload"`
-}
-
-type stubResponse struct {
-	LatencyMS int64       `json:"latency_ms"`
-	HTTPCode  int         `json:"http_code"`
-	Headers   []header    `json:"headers"`
-	Body      interface{} `json:"body"`
-}
-
-type stubEntry struct {
-	Request  stubRequest  `json:"request"`
-	Response stubResponse `json:"response"`
-}
-
-type stubInfo struct {
-	StubPort  int         `json:"stub_port"`
-	StubEntry []stubEntry `json:"stub_entries"`
 }
 
 type payload struct {
@@ -95,13 +69,10 @@ type testResult struct {
 	Request        request  `json:"request"`
 	Expect         expect   `json:"expect"`
 	Actual         actual   `json:"actual"`
-	StubInfo       stubInfo `json:"stub_info"`
 }
 
 type testCase struct {
 	TestInfo testInfo   `json:"test_info"`
-	StubInfo []stubInfo `json:"stub_info"`
-	//TODO: StubConfig
 	Request request `json:"request"`
 	Expect  expect  `json:"expect"`
 }
@@ -119,20 +90,6 @@ func readTestCaseJSON(input io.Reader) (testCase, error) {
 		return ti, errors.New("Error parsing content as JSON")
 	}
 	return ti, nil
-}
-
-// if the test case requires stub configuration, do so
-func configureStubEngine(testCase) {
-	stubEngine := os.Getenv("STUB_ENGINE")
-	log.Printf("Sending configuration to stub engine %v\n", stubEngine)
-	switch strings.ToUpper(stubEngine) {
-	case "MONTEBANK":
-		log.Println("Stub engine is Montebank")
-	case "STUBBY":
-		log.Println("Stub engine is Stubby")
-	default:
-		log.Printf("Don't know what to do for stub engine '%v'\n", stubEngine)
-	}
 }
 
 // populateRequest takes the content of the test case and parses it into
@@ -350,12 +307,6 @@ func executeTestCase(testFile *os.File, resultsFile *os.File) {
 	if err != nil {
 		log.Println("Unable to read test case JSON input")
 		os.Exit(1)
-	}
-
-	// if there's a stub to be configured, do so
-	if os.Getenv("STUB_ENGINE") != "" {
-		log.Println("STUB_ENGINE configured")
-		configureStubEngine(tc)
 	}
 
 	// populate the the "request" content that will eventually be sent to stdout
