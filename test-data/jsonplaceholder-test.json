@@ -1,5 +1,5 @@
 {
-  "_comment": "Need to define $APP as IP $STUB_ENGINE as 'montebank' or 'stubby'",
+  "_comment": "Need to define $APP as IP",
   "test_info": {
     "id": "get posts/1",
     "description": "Test hitting jsonplaceholder JSON API",
