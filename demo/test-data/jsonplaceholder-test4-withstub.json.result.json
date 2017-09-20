@@ -1,0 +1,90 @@
+{
+  "pass_fail": "pass",
+  "pass_fail_reason": "",
+  "timestamp": "2017-09-20T00:52:26Z",
+  "test_info": {
+    "id": "get posts/1",
+    "description": "Test hitting jsonplaceholder JSON API",
+    "version": "1",
+    "date_uploaded": "",
+    "author": "David Mitchell",
+    "tags": null
+  },
+  "request": {
+    "verb": "GET",
+    "url": "https://jsonplaceholder.typicode.com/posts/1",
+    "payload": {
+      "headers": null,
+      "body": ""
+    }
+  },
+  "expect": {
+    "parse_as": "regex",
+    "http_code": 200,
+    "max_latency_ms": 120000,
+    "headers": null,
+    "body": {
+      "body": "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto",
+      "id": "\\d+",
+      "title": "\\.*",
+      "userId": "1"
+    }
+  },
+  "actual": {
+    "http_code": 200,
+    "latency_ms": 773,
+    "headers": {
+      "Access-Control-Allow-Credentials": [
+        "true"
+      ],
+      "Cache-Control": [
+        "public, max-age=14400"
+      ],
+      "Cf-Cache-Status": [
+        "HIT"
+      ],
+      "Cf-Ray": [
+        "3a10cd51fec35203-MEL"
+      ],
+      "Content-Type": [
+        "application/json; charset=utf-8"
+      ],
+      "Date": [
+        "Wed, 20 Sep 2017 00:52:26 GMT"
+      ],
+      "Etag": [
+        "W/\"124-yiKdLzqO5gfBrJFrcdJ8Yq0LGnU\""
+      ],
+      "Expires": [
+        "Wed, 20 Sep 2017 04:52:26 GMT"
+      ],
+      "Pragma": [
+        "no-cache"
+      ],
+      "Server": [
+        "cloudflare-nginx"
+      ],
+      "Set-Cookie": [
+        "__cfduid=d1f1b7ff13e4bd2afcd65610828f95a741505868746; expires=Thu, 20-Sep-18 00:52:26 GMT; path=/; domain=.typicode.com; HttpOnly"
+      ],
+      "Vary": [
+        "Accept-Encoding"
+      ],
+      "Via": [
+        "1.1 vegur"
+      ],
+      "X-Content-Type-Options": [
+        "nosniff"
+      ],
+      "X-Powered-By": [
+        "Express"
+      ]
+    },
+    "body": {
+      "body": "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto",
+      "id": 1,
+      "title": "sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
+      "userId": 1
+    }
+  }
+}
