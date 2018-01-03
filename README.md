@@ -1,4 +1,4 @@
-# jtrunner (JSON test runner)
+# wilee (JSON test runner)
 
 App designed to execute REST API functional test cases that have been encoded as JSON documents
 
@@ -8,20 +8,14 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-You'll probably want to define a set of environment variables before executing tests using JSON test runner.
+You'll probably want to define a set of environment variables before executing tests using wilee.
 
 An important one is to set the target app server that you wish to test
 
 ```
 APP="https://server:port"
 ```
-JSON test runner supports sending per-test configuration to a stub engine. This configuration is included in the JSON test configuration. To use this, set the stub engine type (currently supports "stubby" and "montebank") and either the DNS name or IP address of the stub server
-```
-STUB_ENGINE="montebank"
-STUB_SERVER="IP address"
-```
-
-JSON test runner can either read a single test case from stdin and write results to stdout (where they can be processed by e.g. jq), or you can supply a set of test cases to be executed. In the latter case, all test cases will be executed simultaneously
+wilee can either read a single test case from stdin and write results to stdout (where they can be processed by e.g. jq), or you can supply a set of test cases to be executed. In the latter case, all test cases will be executed simultaneously
 ```
 TESTCASE=test-data/jsonplaceholder-test[0124].json
 ```
