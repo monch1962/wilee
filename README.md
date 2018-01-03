@@ -77,9 +77,9 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 
 ## Authors
 
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
+* **David Mitchell** - *Initial work* - (https://github.com/monch1962)
 
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
+See also the list of [contributors](https://github.com/monch1962/wilee/contributors) who participated in this project.
 
 ## License
 
