@@ -6,6 +6,22 @@ App designed to execute REST API functional test cases that have been encoded as
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
 
+### Download and Compile
+
+```
+$ git clone https://github.com/monch1962/wilee
+$ cd wilee
+$ go build wilee.go
+```
+
+You should then see a new wilee executable file. It'll be named 'wilee.exe' if you're running Windows, or 'wilee' if you're running pretty much anything else.
+
+You may want to built wilee for a different system to that you're currently using - for example, you might be sitting in front of a Mac, but you want to build wilee to run within a Linux Docker container. In that case, change the last command to:
+```
+$ OS=linux ARCH=amd64 go build wilee.go
+```
+and you'll get a file named 'wilee' that'll run on your Linux container. It *WON'T* run on your Mac, because the binary won't be compatible.
+
 ### Prerequisites
 
 You'll probably want to define a set of environment variables before executing tests using wilee.
@@ -63,17 +79,10 @@ Add additional notes about how to deploy this on a live system
 
 ## Built With
 
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
 
 ## Contributing
 
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
-
 ## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags).
 
 ## Authors
 
