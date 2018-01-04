@@ -3,7 +3,7 @@
 App designed to execute REST API functional test cases that have been encoded as JSON documents
 
 ## Quick start
-Assuming you've got Go installed:
+Assuming you've got Go (https://golang.org/) installed:
 ```
 $ git clone https://github.com/monch1962/wilee
 $ cd wilee
