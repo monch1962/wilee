@@ -21,6 +21,24 @@ In most workplaces I've been at, SIT is generally conducted as follows:
 * employ a bunch of "expert" testers. These people will set up their test environments using some different combination of PTFs and then write your SIT tests. This combination of PTFs might be similar to those used by your developers, but there will be test-specific PTFs in there that your developers won't be using. Alternately, the SIT PTFs might be vastly different from those used by your developers. Either way, you'll have more "stuff" to deal with
 * the end result is that you'll have a bunch of SIT test artefacts - that's "test environment" plus "code" plus "data" plus "test results" plus maybe some documentation - that you'll have to maintain over the life of the project
 
+### And...?
+Here's some harsh lessons I've learned with respect to the above:
+* _good_ testers are hard to find and tend to be expensive; you really want them to be as productive as possible, as quickly as possible
+* most of the value of _good_ testers comes in their ability to identify _what_ needs to be tested, work out _how_ to test it & explain _why_ exactly that set of things needs to be tested. Their ability to actually create test cases is somewhere further down the list
+* installing an automation test toolset should be as fast, simple and idiot-proof as possible, on any platform from a tester's laptop to a CI/CD pipeline. Very few tools meet those criteria
+* people talk about test-driven development (TDD) as though it's easily achievable; it _should be possible to create new automation tests within seconds or minutes_, not hours
+  * adding new test cases should be a no-brainer, near-zero-time task that can be performed before development starts
+  * with practice, a scrum team should be able to create new automation tests _during_ sprint planning (WTF?)
+* test cases should be highly _mutable by design_; test cases are almost never static, and need to evolve over the lifetime of a project
+* test cases should be _atomic_ (e.g. single file per test case, with no external dependencies)
+* people tend to focus on test case _creation_, but the tough part is what comes after that: test lifecycle management
+* test execution should be _extremely_ fast
+* test execution should normally be performed as part of a CI/CD pipeline, automatically triggered via e.g. a git branch update
+* test execution should be highly _auditable_ and support any audit framework
+* creating and maintaining _test suites_ should be a trivial exercise
+* avoid test frameworks as far as possible, as they tie you into a specific way of working
+* testing tools should support current _and future_ best practice processes
+
 ## What's wrong with other SIT tools in this space?
 
 This is always going to be a highly opinionated list, but here goes...
@@ -42,7 +60,7 @@ wilee tries to make it simple to integrate with whatever test management tools y
 
 ## Design decisions
 
-wilee is deliberately opinionated, which has driven the following decision decisions:
+wilee is deliberately opinionated, which has driven the following design decisions:
 * test cases are written in JSON, and test execution results are presented in JSON
 * wilee is written in Go
 * command line interface only
@@ -80,7 +98,7 @@ Go:
 * Easy to leverage different test case & results storage options
 
 ### Why a minimal feature set?
-This decision is based on the Unix philosophy as documented at https://en.Wikipedia.org/wiki/Unix_philosophy
+wilee attempts to follow the Unix philosophy as documented at https://en.Wikipedia.org/wiki/Unix_philosophy
 * “Write programs that do one thing and do it well”
 * “Expect the output of every program to become the input to another, as yet unknown, program”
 * “Write programs to work together”
