@@ -8,7 +8,7 @@ Assuming you've got [Go](https://golang.org/) installed:
 $ git clone https://github.com/monch1962/wilee
 $ cd wilee
 $ go build wilee.go
-$ APP="https://jsonplaceholder.typicode.com" wilee < test-data/jsonplaceholder-test.json
+$ APP="https://jsonplaceholder.typicode.com" wilee < demo/jsonplaceholder-test.json
 ```
 
 ## Why do integration testing?
