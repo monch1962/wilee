@@ -1,6 +1,6 @@
 #!/bin/bash
 TEST_CASE="test-cases/jsonplaceholder-test.json"
-PERF_TEST_ENV="http://www.loadtestenv.com"
+PERF_TEST_ENV="http://www.loadtestenv.com:9444"
 TEST_WARMUP_DURATION_MINS=5
 TEST_WARMUP_HIT_RATE=5
 TEST_DURATION_MINS=20
