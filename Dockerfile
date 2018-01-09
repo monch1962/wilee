@@ -12,5 +12,12 @@ FROM alpine:latest
 # Typical use case:
 # $ docker run -d -e APP=https://jsonplaceholder.typicode.com -v `pwd`:/tests -e TESTCASE=tests/jsonplaceholder-test[0124].json wilee:latest
 ENV UPDATED_AT 2018-01-03
-COPY ./wilee wilee
-ENTRYPOINT ["./wilee"]
+ENV WILEE_HOME /opt/wilee
+ENV TEST_CASES $WILEE_HOME/test_cases
+
+RUN mkdir -p $WILEE_HOME
+RUN mkdir -p $TEST_CASES
+
+COPY ./wilee $WILEE_HOME/wilee
+
+ENTRYPOINT ["/bin/ash", "$WILEE_HOME/wilee < $TEST_CASES/*"]
