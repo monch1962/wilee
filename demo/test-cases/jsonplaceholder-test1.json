@@ -8,5 +8,9 @@
   "request": {
     "verb": "GET",
     "url": "/users"
+  },
+  "expect": {
+    "http_code": 200,
+    "parse_as": "regex"
   }
 }
