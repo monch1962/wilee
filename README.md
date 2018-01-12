@@ -11,34 +11,25 @@ $ go build wilee.go
 $ APP="https://jsonplaceholder.typicode.com" wilee < demo/jsonplaceholder-test.json
 ```
 
-## Why do integration testing?
+## Why use wilee?
 
-Look, I can't stand integration testing (commonly referred to as SIT, for System Integration Testing). It's fragile, slow, massively expensive, and tends to chew up loads of time and require loads of people. Lots of organisations are moving away from performing any SIT, and most others are probably wishing they could.
-
-However, for a lot of organisations, SIT is still seen as essential. There's still a risk of changes somewhere breaking something somewhere else, and that risk has to be managed somehow.
-
-In most workplaces I've been at, SIT is generally conducted as follows:
-* you've got a bunch of developers who build your solution in some combination of (programming language/toolsets/frameworks). Let's call these PTFs
-* employ a bunch of "expert" testers. These people will set up their test environments using some different combination of PTFs and then write your SIT tests. This combination of PTFs might be similar to those used by your developers, but there will be test-specific PTFs in there that your developers won't be using. Alternately, the SIT PTFs might be vastly different from those used by your developers. Either way, you'll have more "stuff" to deal with
-* the end result is that you'll have a bunch of SIT test artefacts - that's "test environment" plus "code" plus "data" plus "test results" plus maybe some documentation - that you'll have to maintain over the life of the project
-
-### And...?
-Here's some harsh lessons I've learned with respect to the above:
-* _good_ testers are hard to find and tend to be expensive; you really want them to be as productive as possible, as quickly as possible. On the other hand, it's really easy to find poor testers, and they're quite cheap...
-* most of the value of _good_ testers comes in their ability to identify _what_ needs to be tested, work out _how_ to test it & explain to others _why_ exactly that set of things needs to be tested. Their ability to actually create test cases is somewhere further down the list
-* installing an automation test toolset should be as fast, simple and idiot-proof as possible, on any platform from a tester's laptop to a CI/CD pipeline. Very few tools meet those criteria
-* people talk about test-driven development (TDD) as though it's easily achievable; it _should be possible to create new automation tests within seconds or minutes_, not hours
+wilee is been created out of frustration at currently available integration test tools. In my opinion, nearly all of these tools do a very good job of solving the wrong set of problems. In 2018, my set of non-negotiable requirements are:
+* _good_ testers are hard to find and tend to be expensive; you really want them to be as productive as possible, as quickly as possible
+* most of the value of _good_ testers comes in their ability to identify _what_ needs to be tested, work out _how_ to test it & explain to others _why_ exactly that set of things needs to be tested. Their ability to actually create automation test cases is somewhere further down the list
+* installing an automation test toolset should be as fast, simple and idiot-proof as possible, on any platform from a tester's laptop to a CI/CD pipeline
+* people talk about test-driven development (TDD) as though it's easily achievable; it's a great idea, but for TDD to work, it _has to be possible to create new automation tests within seconds or minutes_, not hours or days
   * adding new test cases should be a no-brainer, near-zero-time task that can be performed before development starts
   * with practice, a scrum team should be able to create new automation tests _during_ sprint planning (WTF?)
 * test cases should be highly _mutable by design_; test cases are almost never static, and need to evolve over the lifetime of a project
 * test cases should be _atomic_ (e.g. single file per test case, with no external dependencies)
-* people tend to focus on test case _creation_, but the tough part is what comes after that: test lifecycle management
-* test execution should be _extremely_ fast
-* test execution should normally be performed as part of a CI/CD pipeline, automatically triggered via e.g. a git branch update
+* existing tools tend to focus on test case _creation_, but the real problem is what comes after that: test lifecycle management
+* test execution should be _extremely_ fast; I don't want to wait while some big clunky framework gets compiled and/or spun up, I want my results instantly
+* test execution should normally be performed as part of a CI/CD pipeline, automatically triggered via e.g. a git branch update. Generally speaking, people should only be running automation test cases when they're shaking out problems with the tests themselves
 * test execution should be highly _auditable_ and support any audit framework
 * creating and maintaining _test suites_ should be a trivial exercise
 * avoid test frameworks as far as possible, as they tie you into a specific way of working
-* testing tools should support current _and future_ best practice processes. There's no way of knowing what "future best practice processes" will be
+* testing tools should support current _and future_ best practice processes. There's no way of knowing what "future best practice processes" will be, and IT people are notoriously bad when it comes to selecting which tools to use
+* I work with code in many different languages; over the past 12 months, the list includes Java, Ruby, Python, Clojure, Golang and probably a few others. I don't want a different testing toolkit for each of those languages
 
 ## What's wrong with other SIT tools in this space?
 
@@ -52,7 +43,7 @@ This is always going to be a highly opinionated list, but here goes...
 
 ## What does wilee bring to the table?
 
-wilee sets out to be the *smallest possible viable framework* for API integration testing. It seeks to isolate you from all PTF-related issues, which means you have almost nothing "new" to maintain besides the stuff your developers are using. The entire wilee "framework" is one file - the wilee executable you built above
+wilee sets out to be the *smallest possible viable framework* for API integration testing. One goal is that you have almost nothing "new" to maintain besides the stuff your developers are using. The entire wilee "framework" is one file - the wilee executable you built above
 
 wilee seeks to utilise the fantastic command-line tools that have been developed since Unix first appeared in the 1960s. Tools like 'bash', 'cat', and 'jq' in particular; these tools are free, they have just about every conceivable bug shaken out, and your developers probably already know how to use them.
 
@@ -81,7 +72,7 @@ JSON is:
 * easy to evolve existing test cases to deal with new data, changes in field content, adding/deleting fields, etc.
 * opens up new options for managing test lifecycle
 * easy to extend
-* provides a path for repurposing functional automation tests as performance tests
+* provides a path for repurposing functional automation tests as performance tests via Artillery
 
 ### Why Go?
 Go:
@@ -89,13 +80,13 @@ Go:
   * makes it easy to setup and reset "test runner" environments
   * makes it very easy to deploy into containers, which is where I prefer to use for test environments
   * makes it easy to integrate with CI/CD pipelines
-* creates executables that have very small RAM and disk footprints
+* creates executables that have very small RAM footprints
 * is very fast to execute (e.g. no startup delay as with JVM languages)
-* offers native support for multithreading via goroutines
-* cross compilation is built into the language
+* offers native support for multithreading via goroutines, which makes it easy to run lots of integration tests simultaneously
+* cross compilation is built into the language, which is very convenient for creating Docker executables from a non-Linux workstation
 
 ### Why command line interface only?
-* Every OS supports execution from the command line
+* Every OS supports execution from the command line, and I want a solution that works on every OS
 * Easy to scale from running a single test to running 1000s of tests
 * Easy to leverage different test case & results storage options
 
@@ -109,6 +100,9 @@ wilee attempts to follow the Unix philosophy as documented at https://en.Wikiped
 * “Developers should design programs so that they do not print unnecessary output”
 * “Developers should design for the future by making their protocols extensible”
 
+### Why do you...?
+* Pass in the base URL via an environment variable, rather than put it in the JSON? Because I want to be able to use the same set of tests across many different test environment instances; because I want to do test execution from within immutable Docker containers, and passing in env vars to Docker containers is a very convenient configuration pattern
+* Read test cases from STDIN rather than from files? Purely for flexibility - I may not want to store my test cases in files for execution
 
 ## Getting Started
 
@@ -134,7 +128,7 @@ and you'll get a file named 'wilee' that'll run on your Linux container. It *WON
 
 To quickly test your new wilee executable, try running on your non-Windows box
 ```
-$ APP="https://jsonplaceholder.typicode.com" wilee < test-data/jsonplaceholder-test.json
+$ APP="https://jsonplaceholder.typicode.com" wilee < test-cases/jsonplaceholder-test.json
 ```
 
 Assuming you've got Internet access, this will run a test against the https://jsonplaceholder.typicode.com site, and return a blob of JSON. Feel free to scroll through the output to see what's there...
