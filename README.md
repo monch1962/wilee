@@ -43,7 +43,7 @@ This is always going to be a highly opinionated list, but here goes...
 
 ## What does wilee bring to the table?
 
-wilee sets out to be the *smallest possible viable framework* for API integration testing. One goal is that you have almost nothing "new" to maintain besides the stuff your developers are using. The entire wilee "framework" is one file - the wilee executable you built above
+wilee sets out to be the *smallest possible viable framework* for API integration testing. The entire wilee "framework" is one file - the wilee executable you built above
 
 wilee seeks to utilise the fantastic command-line tools that have been developed since Unix first appeared in the 1960s. Tools like 'bash', 'cat', and 'jq' in particular; these tools are free, they have just about every conceivable bug shaken out, and your developers probably already know how to use them.
 
@@ -65,7 +65,6 @@ Now let's look at the implications of these decisions...
 JSON is:
 * language and toolset agnostic - "everything understands JSON"
 * easy for humans to write and reason about - "have I get test coverage for this?"
-* test results are easy for computers to parser
 * JSON actually makes a great DSL for writing test cases & capturing test results
 * tests become atomic (1 JSON per test case, 1 JSON per test case execution)
 * easy to mutate existing test cases to create new tests (e.g. generative testing, fuzzy testing)
@@ -83,7 +82,7 @@ Go:
 * creates executables that have very small RAM footprints
 * is very fast to execute (e.g. no startup delay as with JVM languages)
 * offers native support for multithreading via goroutines, which makes it easy to run lots of integration tests simultaneously
-* cross compilation is built into the language, which is very convenient for creating Docker executables from a non-Linux workstation
+* has cross compilation is built into the compiler, which is very convenient for creating Docker executables from a non-Linux workstation
 
 ### Why command line interface only?
 * Every OS supports execution from the command line, and I want a solution that works on every OS
@@ -102,7 +101,7 @@ wilee attempts to follow the Unix philosophy as documented at https://en.Wikiped
 
 ### Why do you...?
 * Pass in the base URL via an environment variable, rather than put it in the JSON? Because I want to be able to use the same set of tests across many different test environment instances; because I want to do test execution from within immutable Docker containers, and passing in env vars to Docker containers is a very convenient configuration pattern
-* Read test cases from STDIN rather than from files? Purely for flexibility - I may not want to store my test cases in files for execution
+* Read test cases from STDIN rather than from files? Purely for flexibility - I may not want to store my test cases in files on disc
 
 ## Getting Started
 
