@@ -143,7 +143,7 @@ APP="https://server:port"
 ```
 wilee can either read a single test case from stdin and write results to stdout (where they can be processed by e.g. jq), or you can supply a set of test cases to be executed. In the latter case, all test cases will be executed simultaneously
 ```
-TESTCASE=test-data/jsonplaceholder-test[0124].json
+TESTCASE=test-cases/jsonplaceholder-test[012].json
 ```
 ### Installing
 
