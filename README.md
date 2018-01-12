@@ -49,7 +49,7 @@ wilee seeks to utilise the fantastic command-line tools that have been developed
 
 wilee makes it easy to leverage the brilliance that is Docker containers, along with whatever container orchestration framework you happen to be using (Docker Compose, Kubernetes, etc.). Docker makes loads of stuff easier, including SIT. wilee won't force you to use Docker, but Docker makes life a lot easier.
 
-wilee tries to make it simple to integrate with whatever test management tools you might be using - that's JIRA, ALM and the like - using bash and wilee itself.
+wilee tries to make it simple to integrate with whatever test management tools you might be using - that's JIRA, ALM and the like - using bash and wilee itself. If it has an API, then wilee can talk to it
 
 ## Design decisions
 
