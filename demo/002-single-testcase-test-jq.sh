@@ -1,3 +1,3 @@
 #!/bin/bash
 rm test-cases/*.result.json 2> /dev/null
-APP="https://jsonplaceholder.typicode.com" go run ../wilee.go < test-cases/jsonplaceholder-test.json | jq '.'
+APP="http://localhost:51062" go run ../wilee.go < test-cases/jsonplaceholder-test.json | jq '.'

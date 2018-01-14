@@ -1,0 +1,10 @@
+version: "2"
+services:
+  wilee-test-apis:
+    image: wilee-test-apis:latest
+    ports:
+     - "51062:3000"
+    expose:
+     - "3000"
+    volumes:
+     - ./apis:/data
