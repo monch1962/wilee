@@ -1,0 +1,131 @@
+{
+  "pass_fail": "pass",
+  "pass_fail_reason": "",
+  "timestamp": "2018-05-29T22:57:51+10:00",
+  "test_info": {
+    "id": "get posts/1",
+    "description": "Test hitting jsonplaceholder JSON API",
+    "version": "1",
+    "date_uploaded": "",
+    "author": "David Mitchell",
+    "tags": null
+  },
+  "request": {
+    "verb": "GET",
+    "url": "https://jsonplaceholder.typicode.com/posts/1",
+    "payload": {
+      "headers": null,
+      "body": ""
+    }
+  },
+  "expect": {
+    "parse_as": "json_schema",
+    "http_code": 200,
+    "max_latency_ms": 120000,
+    "headers": null,
+    "body": {
+      "$id": "http://example.com/example.json",
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "definitions": {},
+      "properties": {
+        "body": {
+          "$id": "/properties/body",
+          "default": "",
+          "examples": [
+            "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto"
+          ],
+          "title": "The Body Schema ",
+          "type": "string"
+        },
+        "id": {
+          "$id": "/properties/id",
+          "default": 0,
+          "examples": [
+            1
+          ],
+          "title": "The Id Schema ",
+          "type": "integer"
+        },
+        "title": {
+          "$id": "/properties/title",
+          "default": "",
+          "examples": [
+            "sunt aut facere repellat provident occaecati excepturi optio reprehenderit"
+          ],
+          "title": "The Title Schema ",
+          "type": "string"
+        },
+        "userId": {
+          "$id": "/properties/userId",
+          "default": 0,
+          "examples": [
+            1
+          ],
+          "title": "The Userid Schema ",
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "actual": {
+    "http_code": 200,
+    "latency_ms": 942,
+    "headers": {
+      "Access-Control-Allow-Credentials": [
+        "true"
+      ],
+      "Cache-Control": [
+        "public, max-age=14400"
+      ],
+      "Cf-Cache-Status": [
+        "HIT"
+      ],
+      "Cf-Ray": [
+        "422921133d7ba99c-SIN"
+      ],
+      "Content-Type": [
+        "application/json; charset=utf-8"
+      ],
+      "Date": [
+        "Tue, 29 May 2018 12:57:51 GMT"
+      ],
+      "Etag": [
+        "W/\"124-yiKdLzqO5gfBrJFrcdJ8Yq0LGnU\""
+      ],
+      "Expect-Ct": [
+        "max-age=604800, report-uri=\"https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct\""
+      ],
+      "Expires": [
+        "Tue, 29 May 2018 16:57:51 GMT"
+      ],
+      "Pragma": [
+        "no-cache"
+      ],
+      "Server": [
+        "cloudflare"
+      ],
+      "Set-Cookie": [
+        "__cfduid=d960863d77d179f4a4444cd2e4b12fc561527598671; expires=Wed, 29-May-19 12:57:51 GMT; path=/; domain=.typicode.com; HttpOnly"
+      ],
+      "Vary": [
+        "Origin, Accept-Encoding"
+      ],
+      "Via": [
+        "1.1 vegur"
+      ],
+      "X-Content-Type-Options": [
+        "nosniff"
+      ],
+      "X-Powered-By": [
+        "Express"
+      ]
+    },
+    "body": {
+      "body": "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto",
+      "id": 1,
+      "title": "sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
+      "userId": 1
+    }
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "_comment": "Need to define $APP as IP",
+  "test_info": {
+    "id": "get posts/1",
+    "description": "Test hitting jsonplaceholder JSON API",
+    "version": "1",
+    "author": "David Mitchell",
+    "tags": [
+      "integration",
+      "tc1234"
+    ]
+  },
+  "request": {
+    "verb": "GET",
+    "url": "/posts/1"
+  },
+  "expect": {
+    "max_latency_ms": 120000,
+    "parse_as": "json_schema",
+    "http_code": 200,
+    "body": {
+      "$id": "http://example.com/example.json",
+      "type": "object",
+      "definitions": {},
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "properties": {
+        "userId": {
+          "$id": "/properties/userId",
+          "type": "integer",
+          "title": "The Userid Schema ",
+          "default": 0,
+          "examples": [
+            1
+          ]
+        },
+        "id": {
+          "$id": "/properties/id",
+          "type": "integer",
+          "title": "The Id Schema ",
+          "default": 0,
+          "examples": [
+            1
+          ]
+        },
+        "title": {
+          "$id": "/properties/title",
+          "type": "string",
+          "title": "The Title Schema ",
+          "default": "",
+          "examples": [
+            "sunt aut facere repellat provident occaecati excepturi optio reprehenderit"
+          ]
+        },
+        "body": {
+          "$id": "/properties/body",
+          "type": "string",
+          "title": "The Body Schema ",
+          "default": "",
+          "examples": [
+            "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto"
+          ]
+        }
+      }
+    }
+  }
+}

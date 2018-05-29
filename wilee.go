@@ -18,6 +18,8 @@ import (
 	"regexp"
 	"sync"
 	"time"
+
+	"github.com/xeipuuv/gojsonschema"
 )
 
 type header struct {
@@ -72,9 +74,9 @@ type testResult struct {
 }
 
 type testCase struct {
-	TestInfo testInfo   `json:"test_info"`
-	Request request `json:"request"`
-	Expect  expect  `json:"expect"`
+	TestInfo testInfo `json:"test_info"`
+	Request  request  `json:"request"`
+	Expect   expect   `json:"expect"`
 }
 
 // readTestCaseJSON reads a JSON testcase from an io.Reader and returns it as a formatted Go
@@ -201,6 +203,26 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 		// if there's no parser defined, return false; this is a viable approach
 		// for simply collecting info about an API response but not a test case
 		return false, "expect.parse_as not defined", nil
+	case "json_schema":
+		if expect.Body != nil {
+			expectLoader := gojsonschema.NewGoLoader(expect)
+			actualLoader := gojsonschema.NewGoLoader(actual)
+			result, err := gojsonschema.Validate(expectLoader, actualLoader)
+			//log.Println("Here")
+			if err != nil {
+				log.Println("Error running JSON schema validation")
+				panic(err.Error())
+			}
+			//log.Printf("result.Valid(): %v\n", result.Valid())
+			if !result.Valid() {
+				fmt.Fprintln(os.Stderr, "JSON schema validation of response failed")
+				for _, desc := range result.Errors() {
+					fmt.Printf("- %s\n", desc)
+				}
+				return false, "JSON schema validation of response failed", nil
+			}
+			return true, "", nil
+		}
 	case "regex":
 		// we want to parse the actual content against regex patterns that are defined
 		// in the "expected" part of the test case
@@ -297,8 +319,9 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 		}
 		return true, "", nil
 	default:
-		return false, "", errors.New("expect.parse_as should be one of 'regex', 'exact_match', 'partial_match'")
+		return false, "", errors.New("expect.parse_as should be one of 'regex', 'exact_match', 'partial_match', 'json_schema'")
 	}
+	return false, "???", nil
 }
 
 func executeTestCase(testFile *os.File, resultsFile *os.File) {
