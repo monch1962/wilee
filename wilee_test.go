@@ -52,3 +52,6 @@ func TestLoadInvalidRequestJSON(t *testing.T) {
 		t.Fail()
 	}*/
 }
+//func TestLoadInvalidJSON(t *testing.T) {
+//	t.Fail()
+//}
