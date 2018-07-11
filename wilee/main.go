@@ -6,6 +6,7 @@ package main
 // TESTCASE (optional) = regex for a set of test case JSON files
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -19,6 +20,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/xeipuuv/gojsonschema"
 )
 
@@ -77,6 +79,10 @@ type testCase struct {
 	TestInfo testInfo `json:"test_info"`
 	Request  request  `json:"request"`
 	Expect   expect   `json:"expect"`
+}
+
+type testCaseAwsAPIGatewayEvent struct {
+	TestCase testCase `json:"queryStringParameters"`
 }
 
 // readTestCaseJSON reads a JSON testcase from an io.Reader and returns it as a formatted Go
@@ -391,42 +397,61 @@ func executeTestCaseInWaitGroup(testFile *os.File, resultsFile *os.File, wg *syn
 	executeTestCase(testFile, resultsFile)
 }
 
+//HandleRequest is the designated handler for Lambda
+func HandleRequest(ctx context.Context, event testCaseAwsAPIGatewayEvent) (string, error) {
+	//func HandleRequest() (Response, error) {
+	// fetcha all env variables
+	//for _, element := range os.Environ() {
+	//	variable := strings.Split(element, "=")
+	//	fmt.Println(variable[0], "=>", variable[1])
+	//}
+	ctxStr, _ := json.Marshal(ctx)
+	eventStr, _ := json.Marshal(event)
+	log.Printf("%s\n", ctxStr)
+	log.Printf("%s\n", eventStr)
+	return fmt.Sprintf("%s\n", eventStr), nil
+}
+
 func main() {
-	if os.Getenv("TESTCASE") != "" {
-		// filenames for test cases to run are contained in the env var TESTCASE
-		// which can contain regexes
-		testcases := os.Getenv("TESTCASE")
-		testCaseFilesGlob, _ := filepath.Glob(testcases)
-		numTestCases := len(testCaseFilesGlob)
-		log.Printf("# test cases to execute = %d\n", numTestCases)
-
-		// we're going to run all these test cases in parallel in separate
-		// goroutines...
-		// ... but we also want to wait till all of them have finished before
-		// exiting so we define a WaitGroup
-		var wg sync.WaitGroup
-		for _, testCaseFile := range testCaseFilesGlob {
-			log.Printf("Running test case from file: %v\n", testCaseFile)
-			fTestCase, err := os.Open(testCaseFile)
-			if err != nil {
-				log.Printf("Error opening test case file %v\n", testCaseFile)
-			}
-			testResultsFile := testCaseFile + ".result.json"
-			fTestResults, err := os.Create(testResultsFile)
-			if err != nil {
-				log.Printf("Error opening test case results file %v\n", testResultsFile)
-			}
-
-			// add this new test case to the wait group
-			wg.Add(1)
-			go executeTestCaseInWaitGroup(fTestCase, fTestResults, &wg)
-		}
-
-		// wait here till all test cases have finished executing
-		wg.Wait()
+	if os.Getenv("AWS_LAMBDA_FUNCTION_NAME") != "" {
+		lambda.Start(HandleRequest)
 	} else {
-		// no testcase files supplied in env var TESTCASE
-		// read a single test case from stdin, and write test results to stdout
-		executeTestCase(os.Stdin, os.Stdout)
+		if os.Getenv("TESTCASE") != "" {
+			// filenames for test cases to run are contained in the env var TESTCASE
+			// which can contain regexes
+			testcases := os.Getenv("TESTCASE")
+			testCaseFilesGlob, _ := filepath.Glob(testcases)
+			numTestCases := len(testCaseFilesGlob)
+			log.Printf("# test cases to execute = %d\n", numTestCases)
+
+			// we're going to run all these test cases in parallel in separate
+			// goroutines...
+			// ... but we also want to wait till all of them have finished before
+			// exiting so we define a WaitGroup
+			var wg sync.WaitGroup
+			for _, testCaseFile := range testCaseFilesGlob {
+				log.Printf("Running test case from file: %v\n", testCaseFile)
+				fTestCase, err := os.Open(testCaseFile)
+				if err != nil {
+					log.Printf("Error opening test case file %v\n", testCaseFile)
+				}
+				testResultsFile := testCaseFile + ".result.json"
+				fTestResults, err := os.Create(testResultsFile)
+				if err != nil {
+					log.Printf("Error opening test case results file %v\n", testResultsFile)
+				}
+
+				// add this new test case to the wait group
+				wg.Add(1)
+				go executeTestCaseInWaitGroup(fTestCase, fTestResults, &wg)
+			}
+
+			// wait here till all test cases have finished executing
+			wg.Wait()
+		} else {
+			// no testcase files supplied in env var TESTCASE
+			// read a single test case from stdin, and write test results to stdout
+			executeTestCase(os.Stdin, os.Stdout)
+		}
 	}
 }

@@ -1,0 +1,12 @@
+{
+  "test_info": {
+    "id": "get posts/1",
+    "description": "Test hitting jsonplaceholder JSON API",
+    "version": "1",
+    "author": "David Mitchell"
+  },
+  "reqqqquest": {
+    "verb": "GET",
+    "url": "/posts/1"
+  }
+}
