@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Binaries for programs and plugins
 *.exe
 *.dll
@@ -14,6 +13,7 @@
 # Project-local glide cache, RE: https://github.com/Masterminds/glide/issues/736
 .glide/
 
-=======
 *.result.json
->>>>>>> dbcc6eed076f49de0566c970cdaf00642710fa0a
+
+.serverless/
+bin/

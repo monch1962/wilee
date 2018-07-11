@@ -6,7 +6,6 @@ package main
 // TESTCASE (optional) = regex for a set of test case JSON files
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -17,9 +16,11 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"sync"
 	"time"
 
+	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/xeipuuv/gojsonschema"
 )
@@ -82,7 +83,8 @@ type testCase struct {
 }
 
 type testCaseAwsAPIGatewayEvent struct {
-	TestCase testCase `json:"queryStringParameters"`
+	//TestCase testCase `json:"queryStringParameters"`
+	TestCase string `json:"queryStringParameters"`
 }
 
 // readTestCaseJSON reads a JSON testcase from an io.Reader and returns it as a formatted Go
@@ -398,22 +400,72 @@ func executeTestCaseInWaitGroup(testFile *os.File, resultsFile *os.File, wg *syn
 }
 
 //HandleRequest is the designated handler for Lambda
-func HandleRequest(ctx context.Context, event testCaseAwsAPIGatewayEvent) (string, error) {
-	//func HandleRequest() (Response, error) {
-	// fetcha all env variables
-	//for _, element := range os.Environ() {
-	//	variable := strings.Split(element, "=")
-	//	fmt.Println(variable[0], "=>", variable[1])
-	//}
-	ctxStr, _ := json.Marshal(ctx)
-	eventStr, _ := json.Marshal(event)
-	log.Printf("%s\n", ctxStr)
-	log.Printf("%s\n", eventStr)
-	return fmt.Sprintf("%s\n", eventStr), nil
+func HandleRequest(reqEvent events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	requestStr, _ := json.Marshal(reqEvent.Body)
+	log.Printf("request: %s\n", requestStr)
+	tc, err := readTestCaseJSON(strings.NewReader(reqEvent.Body))
+	//tc, err := readTestCaseJSON(testFile)
+	if err != nil {
+		log.Println("Unable to read test case JSON input")
+		os.Exit(1)
+	}
+
+	// populate the the "request" content that will eventually be sent to stdout
+	testinfo, request, expect, err := populateRequest(tc)
+	if err != nil {
+		log.Println("Unable to parse test request info out of test case")
+		os.Exit(1)
+	}
+
+	// execute the request, and capture the response body, headers, http status and latency
+	body, headers, httpCode, latency, err := executeRequest(request)
+	if err != nil {
+		log.Println("Unable to execute HTTP request")
+		os.Exit(1)
+	}
+
+	// populate the "response" content that will eventually be sent to stdout
+	actual, err := populateResponse(body, headers, httpCode, latency)
+	if err != nil {
+		log.Println("Unable to populate HTTP response JSON")
+		os.Exit(1)
+	}
+
+	// check whether the "response" matches what was expected, which defines whether
+	// the test run passed or failed
+	var passFail = "fail"
+	matchSuccess, passFailReason, err := compareActualVersusExpected(actual, expect)
+	if err != nil {
+		log.Println("Unable to compare actual response vs. expected response")
+		os.Exit(1)
+	}
+	if matchSuccess {
+		passFail = "pass"
+	}
+
+	// construct the output JSON
+	testresult := &testResult{
+		PassFail:       passFail,
+		PassFailReason: passFailReason,
+		Timestamp:      time.Now().Local().Format(time.RFC3339),
+		Request:        request,
+		TestInfo:       testinfo,
+		Expect:         expect,
+		Actual:         actual,
+	}
+
+	// make the output JSON look pretty
+	testresultJSON, err := json.MarshalIndent(testresult, "", "  ")
+	if err != nil {
+		//panic("Unable to display output as JSON")
+	}
+
+	return events.APIGatewayProxyResponse{Body: string(testresultJSON), StatusCode: 200}, nil
 }
 
 func main() {
 	if os.Getenv("AWS_LAMBDA_FUNCTION_NAME") != "" {
+		// code is running inside an AWS Lambda environment; process requests accordingly
 		lambda.Start(HandleRequest)
 	} else {
 		if os.Getenv("TESTCASE") != "" {
