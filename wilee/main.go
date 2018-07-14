@@ -340,6 +340,12 @@ func executeTestCase(testFile *os.File, resultsFile *os.File) {
 		os.Exit(1)
 	}
 
+	testresultJSON, err := executeTestCaseJSON(tc)
+	// send the output JSON to resultsFile
+	resultsFile.WriteString(string(testresultJSON))
+}
+
+func executeTestCaseJSON(tc testCase) (testresultJSON string, err error) {
 	// populate the the "request" content that will eventually be sent to stdout
 	testinfo, request, expect, err := populateRequest(tc)
 	if err != nil {
@@ -385,13 +391,12 @@ func executeTestCase(testFile *os.File, resultsFile *os.File) {
 	}
 
 	// make the output JSON look pretty
-	testresultJSON, err := json.MarshalIndent(testresult, "", "  ")
+	testresultBytes, err := json.MarshalIndent(testresult, "", "  ")
+	testresultJSON = string(testresultBytes)
 	if err != nil {
 		//panic("Unable to display output as JSON")
 	}
-
-	// send the output JSON to resultsFile
-	resultsFile.WriteString(string(testresultJSON))
+	return testresultJSON, nil
 }
 
 func executeTestCaseInWaitGroup(testFile *os.File, resultsFile *os.File, wg *sync.WaitGroup) {
@@ -410,55 +415,7 @@ func HandleRequest(reqEvent events.APIGatewayProxyRequest) (events.APIGatewayPro
 		os.Exit(1)
 	}
 
-	// populate the the "request" content that will eventually be sent to stdout
-	testinfo, request, expect, err := populateRequest(tc)
-	if err != nil {
-		log.Println("Unable to parse test request info out of test case")
-		os.Exit(1)
-	}
-
-	// execute the request, and capture the response body, headers, http status and latency
-	body, headers, httpCode, latency, err := executeRequest(request)
-	if err != nil {
-		log.Println("Unable to execute HTTP request")
-		os.Exit(1)
-	}
-
-	// populate the "response" content that will eventually be sent to stdout
-	actual, err := populateResponse(body, headers, httpCode, latency)
-	if err != nil {
-		log.Println("Unable to populate HTTP response JSON")
-		os.Exit(1)
-	}
-
-	// check whether the "response" matches what was expected, which defines whether
-	// the test run passed or failed
-	var passFail = "fail"
-	matchSuccess, passFailReason, err := compareActualVersusExpected(actual, expect)
-	if err != nil {
-		log.Println("Unable to compare actual response vs. expected response")
-		os.Exit(1)
-	}
-	if matchSuccess {
-		passFail = "pass"
-	}
-
-	// construct the output JSON
-	testresult := &testResult{
-		PassFail:       passFail,
-		PassFailReason: passFailReason,
-		Timestamp:      time.Now().Local().Format(time.RFC3339),
-		Request:        request,
-		TestInfo:       testinfo,
-		Expect:         expect,
-		Actual:         actual,
-	}
-
-	// make the output JSON look pretty
-	testresultJSON, err := json.MarshalIndent(testresult, "", "  ")
-	if err != nil {
-		//panic("Unable to display output as JSON")
-	}
+	testresultJSON, err := executeTestCaseJSON(tc)
 
 	return events.APIGatewayProxyResponse{Body: string(testresultJSON), StatusCode: 200}, nil
 }
