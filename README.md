@@ -8,8 +8,46 @@ Assuming you've got [Go](https://golang.org/) installed:
 $ git clone https://github.com/monch1962/wilee
 $ cd wilee
 $ go build wilee.go
-$ APP="https://jsonplaceholder.typicode.com" wilee < demo/test-cases/jsonplaceholder-test.json
+$ APP="https://jsonplaceholder.typicode.com" bin/wilee < demo/test-cases/jsonplaceholder-test.json
 ```
+
+### To cross-compile for Mac
+```
+$ git clone https://github.com/monch1962/wilee
+$ cd wilee
+$ make clean
+$ make mac
+```
+standalone wilee executable will be in bin/ directory
+
+### To cross-compile for Windows
+```
+$ git clone https://github.com/monch1962/wilee
+$ cd wilee
+$ make clean
+$ make windows
+```
+standalone wilee executable will be in bin/ directory
+
+### To cross-compile for Linux
+```
+$ git clone https://github.com/monch1962/wilee
+$ cd wilee
+$ make clean
+$ make linux
+```
+standalone wilee executable will be in bin/ directory
+
+### To install as a Lambda function
+Assuming you have the serverless framework installed (https://www.serverless.com) and your AWS credentials setup:
+```
+$ git clone https://github.com/monch1962/wilee
+$ cd wilee
+$ make clean
+$ make lambda
+$ serverless deploy
+```
+wilee will be deployed as a Lambda function in your AWS account
 
 ## Why use wilee?
 
