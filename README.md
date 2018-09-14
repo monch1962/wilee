@@ -55,7 +55,7 @@ through tools to mutate them into other test cases. There's any number of ways t
 
 Some simple utilities are provided to turn passing tests into tests that should return an error code. For example
 ```
-$ cat demo/test-cases/jsonplaceholder-test.json | test-mutators/mutate-naughty.sh
+$ cat demo/test-cases/jsonplaceholder-test.json | test-mutators/mutate-naughty-body.sh
 ```
 should mutate a "good" test case into one with a malformed body, where we want to see it return a HTTP 422 result
 
