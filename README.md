@@ -49,6 +49,16 @@ $ serverless deploy
 ```
 wilee will be deployed as a Lambda function in your AWS account
 
+## Creating negative tests from working tests
+One of the strengths of having test cases written in JSON is that they're highly mutable. This means that we can run test cases
+through tools to mutate them into other test cases. There's any number of ways to mutate JSON into something else; the only limit is your imagination. 
+
+Some simple utilities are provided to turn passing tests into tests that should return an error code. For example
+```
+$ cat demo/test-cases/jsonplaceholder-test.json | test-mutators/mutate-naughty.sh
+```
+should mutate a "good" test case into one with a malformed body, where we want to see it return a HTTP 422 result
+
 ## Why use wilee?
 
 wilee is been created out of frustration at currently available integration test tools. In my opinion, nearly all of these tools do a very good job of solving the wrong set of problems. In 2018, my set of non-negotiable requirements are:
