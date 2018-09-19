@@ -198,7 +198,7 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 	//log.Printf("expect.HTTPCode:%d\n", expect.HTTPCode)
 	if expect.HTTPCode != 0 {
 		if expect.HTTPCode != actual.HTTPCode {
-			return false, "actual.HTTPCode doesn't match", nil
+			return false, "actual.HTTPCode doesn't match expect.HTTPCode", nil
 		}
 	}
 	if expect.MaxLatencyMS != 0 {
