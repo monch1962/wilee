@@ -16,12 +16,13 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/remeh/sizedwaitgroup"
 	"github.com/xeipuuv/gojsonschema"
 )
 
@@ -399,7 +400,7 @@ func executeTestCaseJSON(tc testCase) (testresultJSON string, err error) {
 	return testresultJSON, nil
 }
 
-func executeTestCaseInWaitGroup(testFile *os.File, resultsFile *os.File, wg *sync.WaitGroup) {
+func executeTestCaseInWaitGroup(testFile *os.File, resultsFile *os.File, wg *sizedwaitgroup.SizedWaitGroup) {
 	defer wg.Done()
 	executeTestCase(testFile, resultsFile)
 }
@@ -422,7 +423,7 @@ func HandleRequest(reqEvent events.APIGatewayProxyRequest) (events.APIGatewayPro
 
 //lambdaEnv checks whether code is executing in an AWS Lambda environment
 func lambdaEnv() bool {
-	if os.Getenv("AWS_LAMBDA_FUNCTION_NAME") != "" {
+	if os.Getenv("AWS_LAMBDA_FUNCTION_NAME") != "" { //Is there a better approach than this...?
 		return true
 	}
 	return false
@@ -433,11 +434,18 @@ func main() {
 		// code is running inside an AWS Lambda environment; process requests accordingly
 		lambda.Start(HandleRequest)
 	} else {
+		log.Printf("Not running in Lambda env\n")
 		if os.Getenv("TESTCASE") != "" {
 			// filenames for test cases to run are contained in the env var TESTCASE
 			// which can contain regexes
 			testcases := os.Getenv("TESTCASE")
 			testCaseFilesGlob, _ := filepath.Glob(testcases)
+
+			maxConcurrent, err := strconv.Atoi(os.Getenv("MAX_CONCURRENT"))
+			if err != nil {
+				maxConcurrent = 1
+			}
+			log.Printf("Max concurrency = %d\n", maxConcurrent)
 			numTestCases := len(testCaseFilesGlob)
 			log.Printf("# test cases to execute = %d\n", numTestCases)
 
@@ -445,7 +453,11 @@ func main() {
 			// goroutines...
 			// ... but we also want to wait till all of them have finished before
 			// exiting so we define a WaitGroup
-			var wg sync.WaitGroup
+
+			// Using sizedwaitgroup instead of sync.WaitGroup gives me an easy way to limit concurrency
+			//var wg sync.WaitGroup
+			wg := sizedwaitgroup.New(maxConcurrent)
+
 			for _, testCaseFile := range testCaseFilesGlob {
 				log.Printf("Running test case from file: %v\n", testCaseFile)
 				fTestCase, err := os.Open(testCaseFile)
@@ -459,7 +471,8 @@ func main() {
 				}
 
 				// add this new test case to the wait group
-				wg.Add(1)
+				//wg.Add(1) -- need to change the syntax now we're using sizedwaitgroup...
+				wg.Add()
 				go executeTestCaseInWaitGroup(fTestCase, fTestResults, &wg)
 			}
 

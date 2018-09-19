@@ -16,6 +16,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:bb90467981c5e812c4d1c78e498a1416b04cb5149dc5fa2200ab758c37488f6f"
+  name = "github.com/remeh/sizedwaitgroup"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "5e7302b12ccef91dce9fde2f5bda6d5c7ea5d2eb"
+
+[[projects]]
+  branch = "master"
   digest = "1:f4e5276a3b356f4692107047fd2890f2fe534f4feeb6b1fd2f6dfbd87f1ccf54"
   name = "github.com/xeipuuv/gojsonpointer"
   packages = ["."]
@@ -44,6 +52,7 @@
   input-imports = [
     "github.com/aws/aws-lambda-go/events",
     "github.com/aws/aws-lambda-go/lambda",
+    "github.com/remeh/sizedwaitgroup",
     "github.com/xeipuuv/gojsonschema",
   ]
   solver-name = "gps-cdcl"
