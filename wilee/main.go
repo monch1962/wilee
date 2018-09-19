@@ -420,8 +420,16 @@ func HandleRequest(reqEvent events.APIGatewayProxyRequest) (events.APIGatewayPro
 	return events.APIGatewayProxyResponse{Body: string(testresultJSON), StatusCode: 200}, nil
 }
 
-func main() {
+//lambdaEnv checks whether code is executing in an AWS Lambda environment
+func lambdaEnv() bool {
 	if os.Getenv("AWS_LAMBDA_FUNCTION_NAME") != "" {
+		return true
+	}
+	return false
+}
+
+func main() {
+	if lambdaEnv() {
 		// code is running inside an AWS Lambda environment; process requests accordingly
 		lambda.Start(HandleRequest)
 	} else {
