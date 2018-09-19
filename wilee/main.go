@@ -434,7 +434,7 @@ func main() {
 		// code is running inside an AWS Lambda environment; process requests accordingly
 		lambda.Start(HandleRequest)
 	} else {
-		log.Printf("Not running in Lambda env\n")
+		//log.Printf("Not running in Lambda env\n")
 		if os.Getenv("TESTCASE") != "" {
 			// filenames for test cases to run are contained in the env var TESTCASE
 			// which can contain regexes
