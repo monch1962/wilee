@@ -146,6 +146,7 @@ func executeRequest(request request) (interface{}, interface{}, int, time.Durati
 	resp, err := httpClient.Do(req)
 	endTime := time.Since(startTime)
 	if err != nil {
+		log.Fatalln(err)
 		return nil, nil, 0, 0, errors.New("Unable to execute HTTP request")
 	}
 	defer resp.Body.Close()
