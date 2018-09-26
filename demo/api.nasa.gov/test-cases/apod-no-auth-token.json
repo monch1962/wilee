@@ -1,0 +1,26 @@
+{
+    "_comment": "Need to define environment variable APP as https://api.nasa.gov",
+    "test_info": {
+      "id": "get posts/1",
+      "description": "Test that lack of a token gives a 403 error. Not bothering to check response body; just the http code",
+      "version": "1",
+      "author": "David Mitchell",
+      "tags": [
+        "no_token"
+      ]
+    },
+    "request": {
+      "verb": "GET",
+      "url": "/planetary/apod"
+    },
+    "expect": {
+      "max_latency_ms": 120000,
+      "parse_as": "partial_match",
+      "http_code": 403,
+      "body": {
+        "error": {
+          "code": "API_KEY_MISSING"
+        }
+      }
+    }
+  }

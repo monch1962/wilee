@@ -2,7 +2,7 @@
 
 
 [[projects]]
-  digest = "1:6c8d51660e50d38116fe8c29eefc00ce856300329993980f7ce7333a522a6a99"
+  digest = "1:014e79cf5c422dd0547a87bde33c7f7b3cd29116a96fac8897c7e50f18531dea"
   name = "github.com/aws/aws-lambda-go"
   packages = [
     "events",
@@ -11,8 +11,8 @@
     "lambdacontext",
   ]
   pruneopts = "UT"
-  revision = "4d30d0ff60440c2d0480a15747c96ee71c3c53d4"
-  version = "v1.2.0"
+  revision = "2d482ef09017ae953b1e8d5a6ddac5b696663a3c"
+  version = "v1.6.0"
 
 [[projects]]
   branch = "master"
@@ -40,11 +40,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:4619323e30a9fb5776cf5303ee80b1cf3b7a52561f1f0cc534a37a94f5a2fdc3"
+  digest = "1:41bd4de0a27c0b7affef4083bc8f86501b4c7d891f95809a0fb758a23eb5e78f"
   name = "github.com/xeipuuv/gojsonschema"
   packages = ["."]
   pruneopts = "UT"
-  revision = "b84684d0e066369f2a7a8a525f3080909ed4ea6b"
+  revision = "da425ebb7609ba06a0f395fc8a254d1c303364a0"
 
 [solve-meta]
   analyzer-name = "dep"
