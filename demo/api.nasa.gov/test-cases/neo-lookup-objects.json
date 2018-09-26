@@ -1,18 +1,18 @@
 {
     "_comment": "Need to define environment variable APP as https://api.nasa.gov",
     "test_info": {
-      "id": "get posts/1",
-      "description": "Test that a valid token gives a 200 response. Not bothering to check response body as it will change each day",
+      "id": "get /neo/rest/v1/feed",
+      "description": "Test that we can get a list of NEO objects within a defined time period,and get a 200 response. Not bothering to check response body",
       "version": "1",
       "author": "David Mitchell",
       "tags": [
         "token_required",
-        "apod"
+        "neo"
       ]
     },
     "request": {
       "verb": "GET",
-      "url": "/planetary/apod?api_token="
+      "url": "/neo/rest/v1/feed?start_date=2018-09-25&end_date=2018-09-26&api_key="
     },
     "expect": {
       "max_latency_ms": 120000,

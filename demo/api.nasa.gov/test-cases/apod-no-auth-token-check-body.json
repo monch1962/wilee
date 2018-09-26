@@ -7,7 +7,8 @@
       "author": "David Mitchell",
       "tags": [
         "no_token",
-        "body_check"
+        "body_check",
+        "apod"
       ]
     },
     "request": {

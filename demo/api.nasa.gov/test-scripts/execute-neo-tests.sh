@@ -1,5 +1,5 @@
 #!/bin/bash
-TESTCASES=`./test-scripts/select-tests-by-tag.sh token_required`
+TESTCASES=`./test-scripts/select-tests-by-tag.sh neo`
 API_TOKEN=`cat test-cases/NASA_API_KEY`
 for f in $TESTCASES
 do
