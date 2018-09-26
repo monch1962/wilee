@@ -27,8 +27,8 @@ import (
 )
 
 type header struct {
-	Header string `json:"header"`
-	Value  string `json:"value"`
+	Key   string `json:"key"`
+	Value string `json:"value"`
 }
 
 type testInfo struct {
@@ -56,7 +56,7 @@ type expect struct {
 	ParseAs      string `json:"parse_as"`
 	HTTPCode     int    `json:"http_code"`
 	MaxLatencyMS int64  `json:"max_latency_ms"`
-	//Headers      []header    `json:"headers"`
+	//Headers      []header `json:"headers"`
 	Headers json.RawMessage `json:"headers"`
 	Body    interface{}     `json:"body"`
 }
@@ -154,6 +154,19 @@ func executeRequest(request request) (interface{}, interface{}, int, time.Durati
 	if err != nil {
 		return nil, nil, 0, 0, errors.New("Unable to parse HTTP request")
 		//log.Fatalln(err)
+	}
+	for _, headerEntry := range request.Payload.Headers {
+		if os.Getenv("DEBUG") != "" {
+			log.Printf("request header: %v\n", headerEntry)
+		}
+		k := headerEntry.Key
+		v := headerEntry.Value
+		if os.Getenv("DEBUG") != "" {
+			log.Printf("request header key: %v\n", k)
+			log.Printf("request header value: %v\n", v)
+		}
+		req.Header.Set(k, v)
+
 	}
 	startTime := time.Now()
 	resp, err := httpClient.Do(req)
