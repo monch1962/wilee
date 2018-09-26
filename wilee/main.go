@@ -152,6 +152,7 @@ func executeRequest(request request) (interface{}, interface{}, int, time.Durati
 	httpClient := &http.Client{}
 	req, err := http.NewRequest(request.Verb, request.URL, nil)
 	if err != nil {
+		log.Fatalln(err)
 		return nil, nil, 0, 0, errors.New("Unable to parse HTTP request")
 		//log.Fatalln(err)
 	}
@@ -180,6 +181,7 @@ func executeRequest(request request) (interface{}, interface{}, int, time.Durati
 	var v interface{} // Not sure what the response will look like, so just implement an interface
 	err = responseDecoder.Decode(&v)
 	if err != nil {
+		log.Fatalln(err)
 		return nil, nil, 0, 0, errors.New("Unable to parse HTTP response body as JSON")
 	}
 	if os.Getenv("DEBUG") != "" {
@@ -338,19 +340,25 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 		// we want the actual response fields to be an exact match to the "expected" fields
 		// defined in the test case, but the "expected" fields may not contain all the fields in
 		// the actual response
-		//log.Printf("expect.Body:%v\n", expect.Body)
+		if os.Getenv("DEBUG") != "" {
+			log.Printf("expect.Body:%v\n", expect.Body)
+		}
 		var b interface{}
 		err := json.Unmarshal(actual.Body, &b)
 		if err != nil {
 			//panic("Unable to parse actual.Body")
 		}
-		for k, expectValue := range expect.Body.(map[string]interface{}) {
-			//log.Printf("expect[%s]->%v\n", k, expectValue)
-			actualValue := b.(map[string]interface{})[k]
-			//log.Printf("actual[%s]->%v\n", k, actualValue)
-			if expectValue != actualValue {
-				//log.Printf("expectValue != actualValue: %v -> %v", expectValue, actualValue)
-				return false, "expectValue != actualValue", nil
+		if expect.Body != nil {
+			for k, expectValue := range expect.Body.(map[string]interface{}) {
+				//log.Printf("expect[%s]->%v\n", k, expectValue)
+				actualValue := b.(map[string]interface{})[k]
+				//log.Printf("actual[%s]->%v\n", k, actualValue)
+				if expectValue != actualValue {
+					if os.Getenv("DEBUG") != "" {
+						log.Printf("expectValue != actualValue: %v -> %v", expectValue, actualValue)
+					}
+					return false, "expectValue != actualValue", nil
+				}
 			}
 		}
 		return true, "", nil

@@ -16,7 +16,10 @@
     },
     "expect": {
       "max_latency_ms": 120000,
-      "parse_as": "regex",
-      "http_code": 200
+      "parse_as": "partial_match",
+      "http_code": 200,
+      "body": {
+        "total_results": 31638
+      }
     }
   }
