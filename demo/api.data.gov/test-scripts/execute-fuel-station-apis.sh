@@ -19,8 +19,8 @@ done
 #    cat $f | jq '.expect.http_code = 403' | APP=https://developer.nrel.gov go run ../../wilee/main.go | jq '.'
 #done
 
-for f in $TESTCASES
-do
+#for f in $TESTCASES
+#do
     # We're not passing an API key, so the return code should be a 403 - check this...
-    cat $f | jq --arg T "$API_TOKEN" '.request.payload.body = "test"' | APP=https://developer.nrel.gov go run ../../wilee/main.go | jq '.request'
-done
+#    cat $f | jq --arg T "$API_TOKEN" '.request.payload.body = "test"' | APP=https://developer.nrel.gov go run ../../wilee/main.go | jq '.request'
+#done

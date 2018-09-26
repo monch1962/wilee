@@ -53,11 +53,12 @@ type request struct {
 }
 
 type expect struct {
-	ParseAs      string      `json:"parse_as"`
-	HTTPCode     int         `json:"http_code"`
-	MaxLatencyMS int64       `json:"max_latency_ms"`
-	Headers      []header    `json:"headers"`
-	Body         interface{} `json:"body"`
+	ParseAs      string `json:"parse_as"`
+	HTTPCode     int    `json:"http_code"`
+	MaxLatencyMS int64  `json:"max_latency_ms"`
+	//Headers      []header    `json:"headers"`
+	Headers json.RawMessage `json:"headers"`
+	Body    interface{}     `json:"body"`
 }
 
 type actual struct {
@@ -120,11 +121,16 @@ func populateRequest(tc testCase) (testInfo, request, expect, error) {
 		//Content: tc.TestInfo.Content,
 	}
 
+	//var requestPayload payload
+	requestPayload := payload{
+		Headers: tc.Request.Payload.Headers,
+		Body:    tc.Request.Payload.Body,
+	}
+
 	request := &request{
-		Verb:            tc.Request.Verb,
-		URL:             os.Getenv("APP") + tc.Request.URL,
-		Payload.Body:    tc.Request.Payload.Body,
-		Payload.Headers: tc.Request.Payload.Headers,
+		Verb:    tc.Request.Verb,
+		URL:     os.Getenv("APP") + tc.Request.URL,
+		Payload: requestPayload,
 	}
 
 	expect := &expect{
