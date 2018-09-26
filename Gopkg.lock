@@ -16,6 +16,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:b30af7d772f5d4be7f317b365d665fbc8595d458913dc5a85e5629699b8fdb73"
+  name = "github.com/nsf/jsondiff"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "7de28ed2b6e3cdae8e402f68542b1f287740f764"
+
+[[projects]]
+  branch = "master"
   digest = "1:bb90467981c5e812c4d1c78e498a1416b04cb5149dc5fa2200ab758c37488f6f"
   name = "github.com/remeh/sizedwaitgroup"
   packages = ["."]
@@ -52,6 +60,7 @@
   input-imports = [
     "github.com/aws/aws-lambda-go/events",
     "github.com/aws/aws-lambda-go/lambda",
+    "github.com/nsf/jsondiff",
     "github.com/remeh/sizedwaitgroup",
     "github.com/xeipuuv/gojsonschema",
   ]

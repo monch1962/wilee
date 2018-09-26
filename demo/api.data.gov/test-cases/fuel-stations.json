@@ -19,7 +19,13 @@
       "parse_as": "partial_match",
       "http_code": 200,
       "body": {
-        "station_locator_url": "http://www.afdc.energy.gov/afdc/locator/stations/"
+        "station_locator_url": "http://www.afdc.energy.gov/afdc/locator/stations/",
+        "fuel_stations": [
+          {
+            "access_code": "private",
+            "street_address": "2951 Chestnut St"
+          }
+        ]
       }
     }
   }

@@ -22,6 +22,7 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/nsf/jsondiff"
 	"github.com/remeh/sizedwaitgroup"
 	"github.com/xeipuuv/gojsonschema"
 )
@@ -221,6 +222,17 @@ func populateResponse(body interface{}, headers interface{}, httpCode int, laten
 	return actualResponse, nil
 }
 
+// JSONCompare compares 2 JSON strings: if expect is equivalent to actual, or expect is a subset of actual, then return true
+func JSONCompare(actual []byte, expect []byte) jsondiff.Difference {
+	opts := jsondiff.DefaultConsoleOptions()
+	opts.PrintTypes = true
+	jsonDifference, _ := jsondiff.Compare(actual, expect, &opts)
+	if os.Getenv("DEBUG") != "" {
+		log.Printf("JSONCompare difference: %s\n", jsonDifference)
+	}
+	return jsonDifference
+}
+
 // compareActualVersusExpected compares the actual response against the
 // expected response, and returns a boolean indicating whether the match was
 // good or bad
@@ -309,30 +321,18 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 
 		return true, "", nil
 	case "exact_match":
-		// we want the actual response to be an exact match to the "expected" part of
-		// the test case. If there are extra fields in the actual response to what's
-		// defined in "expected", then the test should fail
-		var actualBodyStruct interface{}
-		err := json.Unmarshal(actual.Body, &actualBodyStruct)
-		if err != nil {
-			//panic("Unable to parse actual.Body")
+		// we want the actual response fields to be an exact match to the "expected" fields
+		// defined in the test case, but the "expected" fields may not contain all the fields in
+		// the actual response
+		if os.Getenv("DEBUG") != "" {
+			log.Printf("expect: %s\n", expect.Body)
+			log.Printf("actual: %s\n", actual.Body)
 		}
-		for k, expectValue := range expect.Body.(map[string]interface{}) {
-			//log.Printf("expect[%s]->%v\n", k, expectValue)
-			actualValue := actualBodyStruct.(map[string]interface{})[k]
-			//log.Printf("actual[%s]->%v\n", k, actualValue)
-			if expectValue != actualValue {
-				//log.Printf("expectValue != actualValue: %v -> %v", expectValue, actualValue)
-				return false, "expectValue != actualValue", nil
-			}
-		}
-		for k, expectValue := range actualBodyStruct.(map[string]interface{}) {
-			//log.Printf("expect[%s]->%v\n", k, expectValue)
-			actualValue := expect.Body.(map[string]interface{})[k]
-			//log.Printf("actual[%s]->%v\n", k, actualValue)
-			if expectValue != actualValue {
-				//log.Printf("expectValue != actualValue: %v -> %v", expectValue, actualValue)
-				return false, "expectValue != actualValue", nil
+		if expect.Body != nil {
+			expectJSON, _ := json.Marshal(expect.Body)
+			difference := JSONCompare(actual.Body, expectJSON)
+			if difference != jsondiff.FullMatch {
+				return false, "expect.body is not a subset of actual.body", nil
 			}
 		}
 		return true, "", nil
@@ -341,24 +341,14 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 		// defined in the test case, but the "expected" fields may not contain all the fields in
 		// the actual response
 		if os.Getenv("DEBUG") != "" {
-			log.Printf("expect: %v\n", expect)
-			log.Printf("actual: %v\n", actual)
-		}
-		var b interface{}
-		err := json.Unmarshal(actual.Body, &b)
-		if err != nil {
-			//panic("Unable to parse actual.Body")
+			log.Printf("expect: %s\n", expect.Body)
+			log.Printf("actual: %s\n", actual.Body)
 		}
 		if expect.Body != nil {
-			for k, expectValue := range expect.Body.(map[string]interface{}) {
-				actualValue := b.(map[string]interface{})[k]
-				if expectValue != actualValue {
-					//if !reflect.DeepEqual(expectValue, actualValue) {
-					if os.Getenv("DEBUG") != "" {
-						log.Printf("expectValue != actualValue: %v -> %v", expectValue, actualValue)
-					}
-					return false, "expectValue != actualValue", nil
-				}
+			expectJSON, _ := json.Marshal(expect.Body)
+			difference := JSONCompare(actual.Body, expectJSON)
+			if difference != jsondiff.SupersetMatch && difference != jsondiff.FullMatch {
+				return false, "expect.body is not a subset of actual.body", nil
 			}
 		}
 		return true, "", nil
