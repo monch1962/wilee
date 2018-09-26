@@ -19,7 +19,7 @@
       "parse_as": "partial_match",
       "http_code": 200,
       "body": {
-        "total_results": 31638
+        "station_locator_url": "http://www.afdc.energy.gov/afdc/locator/stations/"
       }
     }
   }

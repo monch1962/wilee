@@ -341,7 +341,8 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 		// defined in the test case, but the "expected" fields may not contain all the fields in
 		// the actual response
 		if os.Getenv("DEBUG") != "" {
-			log.Printf("expect.Body:%v\n", expect.Body)
+			log.Printf("expect: %v\n", expect)
+			log.Printf("actual: %v\n", actual)
 		}
 		var b interface{}
 		err := json.Unmarshal(actual.Body, &b)
@@ -350,10 +351,9 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 		}
 		if expect.Body != nil {
 			for k, expectValue := range expect.Body.(map[string]interface{}) {
-				//log.Printf("expect[%s]->%v\n", k, expectValue)
 				actualValue := b.(map[string]interface{})[k]
-				//log.Printf("actual[%s]->%v\n", k, actualValue)
 				if expectValue != actualValue {
+					//if !reflect.DeepEqual(expectValue, actualValue) {
 					if os.Getenv("DEBUG") != "" {
 						log.Printf("expectValue != actualValue: %v -> %v", expectValue, actualValue)
 					}
