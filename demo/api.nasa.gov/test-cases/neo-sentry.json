@@ -1,0 +1,22 @@
+{
+    "_comment": "Need to define environment variable APP as https://api.nasa.gov",
+    "test_info": {
+      "id": "get /neo/rest/v1/feed",
+      "description": "Test that we can browse NEO objects",
+      "version": "1",
+      "author": "David Mitchell",
+      "tags": [
+        "token_required",
+        "neo"
+      ]
+    },
+    "request": {
+      "verb": "GET",
+      "url": "/neo/rest/v1/neo/sentry?is_active=true&page=0&size=3&api_key="
+    },
+    "expect": {
+      "max_latency_ms": 120000,
+      "parse_as": "regex",
+      "http_code": 200
+    }
+  }
