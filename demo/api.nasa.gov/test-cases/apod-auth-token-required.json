@@ -1,0 +1,21 @@
+{
+    "_comment": "Need to define environment variable APP as https://api.nasa.gov",
+    "test_info": {
+      "id": "get posts/1",
+      "description": "Test that a valid token gives a 200 response. Not bothering to check response body as it will change each day",
+      "version": "1",
+      "author": "David Mitchell",
+      "tags": [
+        "token_required"
+      ]
+    },
+    "request": {
+      "verb": "GET",
+      "url": "/planetary/apod"
+    },
+    "expect": {
+      "max_latency_ms": 120000,
+      "parse_as": "regex",
+      "http_code": 200
+    }
+  }

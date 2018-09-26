@@ -15,12 +15,7 @@
     },
     "expect": {
       "max_latency_ms": 120000,
-      "parse_as": "partial_match",
-      "http_code": 403,
-      "body": {
-        "error": {
-          "code": "API_KEY_MISSING"
-        }
-      }
+      "parse_as": "regex",
+      "http_code": 403
     }
   }
