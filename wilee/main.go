@@ -100,6 +100,11 @@ func readTestCaseJSON(input io.Reader) (testCase, error) {
 	if err != nil {
 		return ti, errors.New("Error parsing content as JSON")
 	}
+	if os.Getenv("DEBUG") != "" {
+		log.Printf("testcase: %v\n", ti)
+		log.Printf("testcase.request.payload.body: %v\n", ti.Request.Payload.Body)
+		log.Printf("testcase.request.payload.headers: %v\n", ti.Request.Payload.Headers)
+	}
 	return ti, nil
 }
 
@@ -116,8 +121,10 @@ func populateRequest(tc testCase) (testInfo, request, expect, error) {
 	}
 
 	request := &request{
-		Verb: tc.Request.Verb,
-		URL:  os.Getenv("APP") + tc.Request.URL,
+		Verb:            tc.Request.Verb,
+		URL:             os.Getenv("APP") + tc.Request.URL,
+		Payload.Body:    tc.Request.Payload.Body,
+		Payload.Headers: tc.Request.Payload.Headers,
 	}
 
 	expect := &expect{
