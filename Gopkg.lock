@@ -16,6 +16,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:6df637324dba7c3328f8c472437a50f93acd3ca9ce092f8749757fc25fcfb85f"
+  name = "github.com/monch1962/okerlund"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "492b0ba12877627955d80caab4ca716d34edbd2d"
+
+[[projects]]
+  branch = "master"
   digest = "1:b30af7d772f5d4be7f317b365d665fbc8595d458913dc5a85e5629699b8fdb73"
   name = "github.com/nsf/jsondiff"
   packages = ["."]
@@ -60,6 +68,7 @@
   input-imports = [
     "github.com/aws/aws-lambda-go/events",
     "github.com/aws/aws-lambda-go/lambda",
+    "github.com/monch1962/okerlund",
     "github.com/nsf/jsondiff",
     "github.com/remeh/sizedwaitgroup",
     "github.com/xeipuuv/gojsonschema",

@@ -22,6 +22,7 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/monch1962/okerlund"
 	"github.com/nsf/jsondiff"
 	"github.com/remeh/sizedwaitgroup"
 	"github.com/xeipuuv/gojsonschema"
@@ -446,16 +447,8 @@ func HandleRequest(reqEvent events.APIGatewayProxyRequest) (events.APIGatewayPro
 	return events.APIGatewayProxyResponse{Body: string(testresultJSON), StatusCode: 200}, nil
 }
 
-//lambdaEnv checks whether code is executing in an AWS Lambda environment
-func lambdaEnv() bool {
-	if os.Getenv("AWS_LAMBDA_FUNCTION_NAME") != "" { //Is there a better approach than this...?
-		return true
-	}
-	return false
-}
-
 func main() {
-	if lambdaEnv() {
+	if okerlund.IsLambdaEnv() {
 		// code is running inside an AWS Lambda environment; process requests accordingly
 		lambda.Start(HandleRequest)
 	} else {
