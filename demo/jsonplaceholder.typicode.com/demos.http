@@ -1,0 +1,55 @@
+# First hit the URL to test, and see what it returns
+GET https://jsonplaceholder.typicode.com/posts/1
+
+# Now hit the same URL through the serverless GARP proxy
+# What comes back is a recorded wilee test case
+GET https://18i96wtyol.execute-api.us-east-1.amazonaws.com/dev//posts/1
+
+# Now grab the response from the previous test, and POST it through wilee
+POST https://coi41vw7re.execute-api.us-east-1.amazonaws.com/dev/
+content-type: application/json
+
+{
+  "test_info": {
+    "id": "",
+    "description": "Recorded by garp against https://jsonplaceholder.typicode.com. Latency: 508.718346ms",
+    "version": "0.01",
+    "date_uploaded": "2018-09-28T00:19:50Z",
+    "author": "garp",
+    "_comment": "",
+    "tags": [
+      "garp"
+    ]
+  },
+  "request": {
+    "_comment": "",
+    "verb": "GET",
+    "url": "/posts/1",
+    "payload": {
+      "headers": [],
+      "body": ""
+    }
+  },
+  "expect": {
+    "parse_as": "exact_match",
+    "_comment": "",
+    "http_code": 200,
+    "max_latency_ms": 0,
+    "headers": [
+      {
+        "header": "Cache-Control",
+        "value": "public, max-age=14400"
+      },
+      {
+        "header": "Content-Type",
+        "value": "application/json; charset=utf-8"
+      }
+    ],
+    "body": {
+      "body": "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto",
+      "id": 1,
+      "title": "sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
+      "userId": 1
+    }
+  }
+}
