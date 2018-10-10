@@ -4,7 +4,6 @@ build:
 lambda:
 	env GOOS=linux go build -ldflags="-s -w" -o bin/wilee wilee/main.go
 linux:
-	#dep ensure
 	env GOOS=linux go build -ldflags="-s -w" -o bin/wilee wilee/main.go
 linux-arm:
 	env GOOS=linux GOARCH=arm go build -ldflags="-s -w" -o bin/wilee wilee/main.go
