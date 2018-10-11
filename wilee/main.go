@@ -3,11 +3,12 @@ package main
 // Test runner for functional tests defined as JSON documents
 // Expects the following environment variables to be defined:
 // APP = target server for requests e.g. "https://SERVER:PORT"
-// TESTCASE (optional) = regex for a set of test case JSON files
+// TESTCASES (optional) = regex for a set of test case JSON files
 
 import (
 	"encoding/json"
 	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -447,16 +448,46 @@ func HandleRequest(reqEvent events.APIGatewayProxyRequest) (events.APIGatewayPro
 	return events.APIGatewayProxyResponse{Body: string(testresultJSON), StatusCode: 200}, nil
 }
 
+func displayHelp() {
+	fmt.Println()
+	fmt.Println("wilee expects to see an environment variable APP pointing to the http/s server to be tested.")
+	fmt.Println()
+	fmt.Println("wilee reads a test case from stdin, and prints test case execution results to stdout")
+	fmt.Println("This means that, if you simply run")
+	fmt.Println("  $ wilee")
+	fmt.Println("it will sit there forever, waiting for input")
+	fmt.Println()
+	fmt.Println("This probably isn't what you want...")
+	fmt.Println()
+	fmt.Println("Instead `cat TESTCASE.json | APP=http://localhost:8000 wilee` is a valid way to run a test against a server running at http://localhost:8000")
+	fmt.Println()
+	fmt.Println("Another option is to set the environment variable TESTCASES to point a set of test cases using wildcards, and use wilee to execute all of those test cases.")
+	fmt.Println("For example,")
+	fmt.Println("  $ APP=http://localhost:8000 TESTCASES=tests/test*.json wilee")
+	fmt.Println("will run all test cases defined in tests/test*.json simultaneously")
+	fmt.Println()
+	fmt.Println("If you want to limit the number of test cases that are run concurrently, you can use the MAX_CONCURRENCY environment variable to do so.")
+	fmt.Println("For example,")
+	fmt.Println("  $ APP=http://localhost:8000 TESTCASES=tests/test*.json MAX_CONCURRENCY=3 wilee")
+	fmt.Println("will run all test cases defined in tests/test*.json, but no more than 3 will run concurrently.")
+}
 func main() {
 	if okerlund.IsLambdaEnv() {
 		// code is running inside an AWS Lambda environment; process requests accordingly
 		lambda.Start(HandleRequest)
 	} else {
 		//log.Printf("Not running in Lambda env\n")
-		if os.Getenv("TESTCASE") != "" {
-			// filenames for test cases to run are contained in the env var TESTCASE
+
+		var helpPtr = flag.Bool("help", false, "Display help")
+		flag.Parse()
+		if *helpPtr == true {
+			displayHelp()
+			os.Exit(0)
+		}
+		if os.Getenv("TESTCASES") != "" {
+			// filenames for test cases to run are contained in the env var TESTCASES
 			// which can contain regexes
-			testcases := os.Getenv("TESTCASE")
+			testcases := os.Getenv("TESTCASES")
 			testCaseFilesGlob, _ := filepath.Glob(testcases)
 
 			maxConcurrent, err := strconv.Atoi(os.Getenv("MAX_CONCURRENT"))
@@ -497,7 +528,7 @@ func main() {
 			// wait here till all test cases have finished executing
 			wg.Wait()
 		} else {
-			// no testcase files supplied in env var TESTCASE
+			// no testcase files supplied in env var TESTCASES
 			// read a single test case from stdin, and write test results to stdout
 			executeTestCase(os.Stdin, os.Stdout)
 		}
