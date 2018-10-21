@@ -11,7 +11,8 @@ elif [[ "$OSTYPE" == "win32" ]]; then
     USER=%USERNAME%
 fi
 
-jq -Rn --arg VERB $VERB --arg URL $URL '.test_info.id=($VERB)+" "+($URL)' |
+echo "{}" |
+    jq --arg VERB $VERB --arg URL $URL '.test_info.id=($VERB)+" "+($URL)' |
     jq '.test_info.description = "wilee test case template"' |
     jq '.test_info.version = "0.01"' |
     jq --arg TIMESTAMP $TIMESTAMP '.test_info.date_uploaded=($TIMESTAMP)' |
@@ -23,6 +24,6 @@ jq -Rn --arg VERB $VERB --arg URL $URL '.test_info.id=($VERB)+" "+($URL)' |
     jq --arg URL $URL '.request.url=($URL)' |
     jq '.request.headers=[]' |
     jq '.request.body=""' |
-    jq --arg HTTP_CODE $HTTP_CODE '.expect.http_code=($HTTP_CODE)' |
+    jq --arg HTTP_CODE $HTTP_CODE '.expect.http_code=($HTTP_CODE|tonumber)' |
     jq '.expect.parse_as="exact_match"' |
     jq '.expect.max_latency_ms=0' 
