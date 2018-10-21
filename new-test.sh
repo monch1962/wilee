@@ -7,7 +7,7 @@ HTTP_CODE=$3
 TIMESTAMP=$(date +%Y-%m-%dT%H:%M:%S%z)
 if [[ "$OSTYPE" == "darwin"* ]]; then
     USER=$(logname)
-elif [[ "$OSTYPE" == "win32" ]]; then
+elif [[ "$OSTYPE" == "win"* ]]; then
     USER=%USERNAME%
 fi
 
@@ -25,5 +25,5 @@ echo "{}" |
     jq '.request.headers=[]' |
     jq '.request.body=""' |
     jq --arg HTTP_CODE $HTTP_CODE '.expect.http_code=($HTTP_CODE|tonumber)' |
-    jq '.expect.parse_as="exact_match"' |
+ #   jq '.expect.parse_as="exact_match"' |
     jq '.expect.max_latency_ms=0' 

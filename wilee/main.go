@@ -242,12 +242,15 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 	//log.Printf("expect.HTTPCode:%d\n", expect.HTTPCode)
 	if expect.HTTPCode != 0 {
 		if expect.HTTPCode != actual.HTTPCode {
-			return false, "actual.HTTPCode doesn't match expect.HTTPCode", nil
+			errText := fmt.Sprintf("actual.HTTPCode doesn't match expect.HTTPCode. Expected %d, got %d", expect.HTTPCode, actual.HTTPCode)
+			//return false, "actual.HTTPCode doesn't match expect.HTTPCode (expected %s, got %s)", nil
+			return false, errText, nil
 		}
 	}
 	if expect.MaxLatencyMS != 0 {
 		if expect.MaxLatencyMS < actual.LatencyMS {
-			return false, "actual.latency_ms > expect.max_latency_ms", nil
+			errText := fmt.Sprintf("actual.latency_ms (%d) > expect.max_latency_ms (%d)", actual.LatencyMS, expect.MaxLatencyMS)
+			return false, errText, nil
 		}
 	}
 	switch expect.ParseAs {
@@ -311,11 +314,11 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 					}
 				case float64:
 					if r.MatchString(fmt.Sprintf("%f", actualValue.(float64))) != true {
-						return false, "", nil
+						return false, "expect.* doesn't match actual.*", nil
 					}
 				case string:
 					if r.MatchString(string(actualValue.(string))) != true {
-						return false, "", nil
+						return false, "expect.* doesn't match actual.*", nil
 					}
 				}
 			}
