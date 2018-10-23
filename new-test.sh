@@ -1,6 +1,12 @@
 #!/bin/bash
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
+if [ "$#" -ne 3 ]; then
+    echo "Expecting to be invoked with 'new-test.sh HTTP_VERB PARTIAL_URL HTTP_RESPONSE_CODE'"
+    echo "e.g. 'new-test.sh GET /posts/1 200' or 'new-test.sh POST /users 202'"
+    exit 1
+fi
+
 VERB=$(echo $1|tr '[:lower:]' '[:upper:]')
 URL=$2
 HTTP_CODE=$3
