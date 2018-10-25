@@ -7,7 +7,7 @@ import (
 )
 
 func TestLoadValidJSON(t *testing.T) {
-	testJSONfile := "demo/test-cases/jsonplaceholder-test.json"
+	testJSONfile := "demo/jsonplaceholder.typicode.com/test-cases/jsonplaceholder-test.json"
 	fileHandle, err := os.Open(testJSONfile)
 	if err != nil {
 		t.Logf("test data file %v not found", testJSONfile)
@@ -21,7 +21,7 @@ func TestLoadValidJSON(t *testing.T) {
 }
 
 func TestLoadBrokenJSON(t *testing.T) {
-	brokenJSONfile := "demo/test-cases/invalid/broken-json.json"
+	brokenJSONfile := "demo/jsonplaceholder.typicode.com/test-cases/invalid/broken-json.json"
 	fileHandle, err := os.Open(brokenJSONfile)
 	if err != nil {
 		t.Logf("broken test data file %v not found", brokenJSONfile)
@@ -35,7 +35,7 @@ func TestLoadBrokenJSON(t *testing.T) {
 }
 
 func TestLoadInvalidRequestJSON(t *testing.T) {
-	brokenJSONfile := "demo/test-cases/invalid/invalid-request-json.json"
+	brokenJSONfile := "demo/jsonplaceholder.typicode.com/test-cases/invalid/invalid-request-json.json"
 	fileHandle, err := os.Open(brokenJSONfile)
 	if err != nil {
 		t.Logf("broken test data file %v not found", brokenJSONfile)
@@ -52,6 +52,7 @@ func TestLoadInvalidRequestJSON(t *testing.T) {
 		t.Fail()
 	}*/
 }
+
 //func TestLoadInvalidJSON(t *testing.T) {
 //	t.Fail()
 //}
