@@ -23,6 +23,7 @@ echo "{}" |
     jq --arg VERB $VERB '.request.verb=($VERB)' |
     jq --arg URL $URL '.request.url=($URL)' |
     jq '.request.headers=[]' |
+    jq '.request.parameters=[]' |
     jq '.request.body=""' |
     jq --arg HTTP_CODE $HTTP_CODE '.expect.http_code=($HTTP_CODE|tonumber)' |
  #   jq '.expect.parse_as="exact_match"' |

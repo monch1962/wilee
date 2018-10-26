@@ -10,6 +10,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"html"
 	"io"
 	"io/ioutil"
 	"log"
@@ -30,8 +31,13 @@ import (
 )
 
 type header struct {
-	Key   string `json:"key"`
-	Value string `json:"value"`
+	Header string `json:"header"`
+	Value  string `json:"value"`
+}
+
+type parameter struct {
+	Key   string   `json:"key"`
+	Value []string `json:"value"`
 }
 
 type testInfo struct {
@@ -45,8 +51,9 @@ type testInfo struct {
 }
 
 type payload struct {
-	Headers []header `json:"headers"`
-	Body    string   `json:"body"`
+	Headers    []header    `json:"headers"`
+	Body       string      `json:"body"`
+	Parameters []parameter `json:"parameters"`
 }
 
 type request struct {
@@ -108,6 +115,7 @@ func readTestCaseJSON(input io.Reader) (testCase, error) {
 		log.Printf("testcase: %v\n", ti)
 		log.Printf("testcase.request.payload.body: %v\n", ti.Request.Payload.Body)
 		log.Printf("testcase.request.payload.headers: %v\n", ti.Request.Payload.Headers)
+		log.Printf("testcase.request.payload.parameters: %v\n", ti.Request.Payload.Parameters)
 	}
 	return ti, nil
 }
@@ -126,8 +134,9 @@ func populateRequest(tc testCase) (testInfo, request, expect, error) {
 
 	//var requestPayload payload
 	requestPayload := payload{
-		Headers: tc.Request.Payload.Headers,
-		Body:    tc.Request.Payload.Body,
+		Headers:    tc.Request.Payload.Headers,
+		Body:       tc.Request.Payload.Body,
+		Parameters: tc.Request.Payload.Parameters,
 	}
 
 	request := &request{
@@ -153,7 +162,27 @@ func executeRequest(request request) (interface{}, interface{}, int, time.Durati
 		return nil, nil, 0, 0, errors.New("request.verb must be one of GET, POST, PUT, DELETE, HEAD, PATCH")
 	}
 	httpClient := &http.Client{}
-	req, err := http.NewRequest(request.Verb, request.URL, nil)
+	var httpParamString strings.Builder
+	log.Printf("req.Payload.Parameters: %v\n", request.Payload.Parameters)
+	for _, param := range request.Payload.Parameters {
+		log.Printf("param: %s\n", param)
+
+		if httpParamString.String() == "" {
+			httpParamString.WriteString("?")
+		} else {
+			httpParamString.WriteString("&")
+		}
+		httpParamString.WriteString(param.Key)
+		httpParamString.WriteString("=")
+		httpParamString.WriteString(html.UnescapeString(string(param.Value[0])))
+	}
+	if os.Getenv("DEBUG") != "" {
+		log.Printf("httpParamString: %s\n", httpParamString.String())
+	}
+
+	unescapedURL := request.URL + httpParamString.String()
+	log.Printf("unescapedURL: %s\n", unescapedURL)
+	req, err := http.NewRequest(request.Verb, unescapedURL, nil)
 	if err != nil {
 		log.Fatalln(err)
 		return nil, nil, 0, 0, errors.New("Unable to parse HTTP request")
@@ -163,7 +192,7 @@ func executeRequest(request request) (interface{}, interface{}, int, time.Durati
 		if os.Getenv("DEBUG") != "" {
 			log.Printf("request header: %v\n", headerEntry)
 		}
-		k := headerEntry.Key
+		k := headerEntry.Header
 		v := headerEntry.Value
 		if os.Getenv("DEBUG") != "" {
 			log.Printf("request header key: %v\n", k)
