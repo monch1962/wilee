@@ -6,6 +6,7 @@ package main
 // TESTCASES (optional) = regex for a set of test case JSON files
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -17,6 +18,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -52,7 +54,7 @@ type testInfo struct {
 
 type payload struct {
 	Headers    []header    `json:"headers"`
-	Body       string      `json:"body"`
+	Body       interface{} `json:"body"`
 	Parameters []parameter `json:"parameters"`
 }
 
@@ -105,10 +107,12 @@ func readTestCaseJSON(input io.Reader) (testCase, error) {
 	j, err := ioutil.ReadAll(input)
 	var ti testCase
 	if err != nil {
+		log.Printf("Error reading JSON test case content")
 		return ti, errors.New("Error reading JSON test case content")
 	}
 	err = json.Unmarshal(j, &ti)
 	if err != nil {
+		log.Printf("Error parsing content as JSON")
 		return ti, errors.New("Error parsing content as JSON")
 	}
 	if os.Getenv("DEBUG") != "" {
@@ -199,7 +203,27 @@ func executeRequest(request request) (interface{}, interface{}, int, time.Durati
 			log.Printf("request header value: %v\n", v)
 		}
 		req.Header.Set(k, v)
+	}
 
+	log.Printf("req.Payload.Body: %s\n", request.Payload.Body)
+	if request.Payload.Body != nil && !reflect.ValueOf(request.Payload.Body).IsNil() {
+
+		body, _ := json.Marshal(request.Payload.Body)
+		log.Printf("body: %s\n", body)
+		bodyReader := bytes.NewReader(body)
+		bodyReadCloser := ioutil.NopCloser(bodyReader)
+		req.Body = bodyReadCloser
+		if os.Getenv("DEBUG") != "" {
+			log.Printf("httpRequest: %v\n", req)
+		}
+		/*resp, err := httpClient.Do(req)
+		if err != nil {
+			log.Println("Error getting response from outgoing http/https request")
+			log.Printf("%v\n", err)
+			os.Exit(1)
+		}
+		//duration := time.Since(startTime)
+		//return resp, duration, nil*/
 	}
 	startTime := time.Now()
 	resp, err := httpClient.Do(req)
@@ -396,6 +420,7 @@ func executeTestCase(testFile *os.File, resultsFile *os.File) {
 	// read the JSON test case from file
 	tc, err := readTestCaseJSON(testFile)
 	if err != nil {
+		log.Printf("%s\n", err)
 		log.Println("Unable to read test case JSON input")
 		os.Exit(1)
 	}
