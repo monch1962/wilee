@@ -49,6 +49,24 @@ $ serverless deploy
 ```
 wilee will be deployed as a Lambda function in your AWS account
 
+### Getting help
+![](screen_svgs/help.svg?sanitize=1)
+
+#### Let's see what a very simple wilee test case looks like...
+![](screen_svgs/show_simple_test.svg?sanitize=1)
+
+## Getting started with Test-Driven Development (TDD)
+Let's assume we're at the planning stage for a sprint, and the decision is made to implement a new REST API to return details about Australian Prime Ministers. Let's see what we can do _during_ that planning session to start creating executable test cases...
+
+We can very quickly create a new wilee test template for the functionality we're about to start building. Let's create a very simple test to check whether the initial functionality is working as expected
+![](screen_svgs/new_test.svg?sanitize=1)
+Note that we're not checking anything about the output of this test case, except that it returns a HTTP 200 response. All this test does is a GET /prime-ministers/1 and confirm a 200 response code.
+
+Big deal, right? Except that now we've got a small piece of scope that everyone can agree on, and that we can now check into our CI pipeline to run whether new code gets checked in. Took about 5 seconds to create the test, and now we can start to flesh it out a bit.
+
+Now I want to tag this new test as a *progression* test case, meaning it covers new functionality being built in this sprint. That's pretty simple
+![](screen_svgs/mark_test_as_progression.svg?sanitize=1)
+
 ## Creating negative tests from working tests
 One of the strengths of having test cases written in JSON is that they're highly mutable. This means that we can run test cases
 through tools to mutate them into other test cases. There's any number of ways to mutate JSON into something else; the only limit is your imagination. 
