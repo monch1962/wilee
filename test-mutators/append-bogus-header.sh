@@ -9,4 +9,5 @@ RANDOM_HEADER_VALUE=$(base64 -i /dev/urandom | fold -w 20 | head -1)
 echo $(cat) |
    jq --arg RHK "$RANDOM_HEADER_KEY" --arg RHV "$RANDOM_HEADER_VALUE" '.request.headers[$RHK] = $RHV' |
    #jq '.expect.http_code=400' |
+   jq '.test_info.tags -= ["random_extra_header"]' |
    jq '.test_info.tags += ["random_extra_header"]'

@@ -7,5 +7,6 @@ RANDOM_CHAR=$(cat /dev/random | head -c 1)
 echo $(cat) |
    jq --arg R "$RANDOM_CHAR" '.request.headers = [$R]' |
    jq '.expect.http_code=422' |
+   jq '.test_info.tags -= ["negative"]'|
    jq '.test_info.tags += ["negative"]'|
    jq 'del(.expect.body)'

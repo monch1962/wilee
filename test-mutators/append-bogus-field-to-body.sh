@@ -9,4 +9,5 @@ echo $RANDOM_VALUE
 echo $(cat) |
    jq --arg RHK "$RANDOM_KEY" --arg RHV "$RANDOM_VALUE" '.request.body += {($RHK|tostring): ($RHV|tostring)}' |
    jq '.expect.http_code=400' |
+   jq '.test_info.tags -= ["random_extra_body_field"]' |
    jq '.test_info.tags += ["random_extra_body_field"]'

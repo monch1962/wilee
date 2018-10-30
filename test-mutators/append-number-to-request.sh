@@ -7,4 +7,5 @@ echo $(cat) |
    jq '.expect.http_code="400"' |
    jq '.test_info.tags -= ["negative"]' |
    jq '.test_info.tags += ["negative"]' |
+   jq '.test_info.tags -= ["append_number_to_request_url"]' |
    jq '.test_info.tags += ["append_number_to_request_url"]'

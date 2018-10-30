@@ -8,5 +8,6 @@ randomnaughtystring=$(sed -n "${R_LINE}p" $DIR/naughty-bodies/blns.txt)
 echo $(cat) |
    jq --arg RNS "$randomnaughtystring" '.request.body = $RNS' |
    jq '.expect.http_code=422' |
+   jq '.test_info.tags -= ["negative"]'|
    jq '.test_info.tags += ["negative"]'|
    jq 'del(.expect.body)'
