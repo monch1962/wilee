@@ -1,0 +1,25 @@
+{
+  "test_info": {
+    "id": "GET /users",
+    "description": "wilee test case template",
+    "version": "0.01",
+    "date_uploaded": "2018-10-31T06:38:28+1100",
+    "author": "davidm",
+    "_comment": "**GENERATED TEMPLATE - NEED TO UPDATE THIS TEST CASE AS IT WILL INITIALLY FAIL**",
+    "tags": [
+      "template_only"
+    ]
+  },
+  "request": {
+    "_comment": "",
+    "verb": "GET",
+    "url": "/users",
+    "headers": [],
+    "parameters": [],
+    "body": ""
+  },
+  "expect": {
+    "http_code": 200,
+    "max_latency_ms": 0
+  }
+}
