@@ -167,9 +167,13 @@ func executeRequest(request request) (interface{}, interface{}, int, time.Durati
 	}
 	httpClient := &http.Client{}
 	var httpParamString strings.Builder
-	log.Printf("req.Payload.Parameters: %v\n", request.Payload.Parameters)
+	if os.Getenv("DEBUG") != nil {
+		log.Printf("req.Payload.Parameters: %v\n", request.Payload.Parameters)
+	}
 	for _, param := range request.Payload.Parameters {
-		log.Printf("param: %s\n", param)
+		if os.Getenv("DEBUG") != nil {
+			log.Printf("param: %s\n", param)
+		}
 
 		if httpParamString.String() == "" {
 			httpParamString.WriteString("?")
@@ -185,7 +189,9 @@ func executeRequest(request request) (interface{}, interface{}, int, time.Durati
 	}
 
 	unescapedURL := request.URL + httpParamString.String()
-	log.Printf("unescapedURL: %s\n", unescapedURL)
+	if os.Getenv("DEBUG") != "" {
+		log.Printf("unescapedURL: %s\n", unescapedURL)
+	}
 	req, err := http.NewRequest(request.Verb, unescapedURL, nil)
 	if err != nil {
 		log.Fatalln(err)
@@ -204,12 +210,15 @@ func executeRequest(request request) (interface{}, interface{}, int, time.Durati
 		}
 		req.Header.Set(k, v)
 	}
-
-	log.Printf("req.Payload.Body: %s\n", request.Payload.Body)
+	if os.Getenv("DEBUG") != "" {
+		log.Printf("req.Payload.Body: %s\n", request.Payload.Body)
+	}
 	if request.Payload.Body != nil && !reflect.ValueOf(request.Payload.Body).IsNil() {
 
 		body, _ := json.Marshal(request.Payload.Body)
-		log.Printf("body: %s\n", body)
+		if os.Getenv("DEBUG") != "" {
+			log.Printf("body: %s\n", body)
+		}
 		bodyReader := bytes.NewReader(body)
 		bodyReadCloser := ioutil.NopCloser(bodyReader)
 		req.Body = bodyReadCloser
