@@ -167,11 +167,11 @@ func executeRequest(request request) (interface{}, interface{}, int, time.Durati
 	}
 	httpClient := &http.Client{}
 	var httpParamString strings.Builder
-	if os.Getenv("DEBUG") != nil {
+	if os.Getenv("DEBUG") != "" {
 		log.Printf("req.Payload.Parameters: %v\n", request.Payload.Parameters)
 	}
 	for _, param := range request.Payload.Parameters {
-		if os.Getenv("DEBUG") != nil {
+		if os.Getenv("DEBUG") != "" {
 			log.Printf("param: %s\n", param)
 		}
 
