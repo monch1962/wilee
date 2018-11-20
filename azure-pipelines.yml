@@ -36,4 +36,5 @@ steps:
   
 - script: |
     go test
+  workingDirectory: '$(modulePath)'
   displayName: 'Run unit tests'
