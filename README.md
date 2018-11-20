@@ -2,6 +2,8 @@
 
 App designed to execute REST API functional test cases that have been encoded as JSON documents
 
+[![Build Status](https://dev.azure.com/monch1962/monch1962/_apis/build/status/monch1962.wilee)](https://dev.azure.com/monch1962/monch1962/_build/latest?definitionId=2)
+
 ## Quick start
 Assuming you've got [Go](https://golang.org/) installed:
 ```
