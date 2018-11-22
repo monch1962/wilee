@@ -35,6 +35,27 @@ steps:
   displayName: 'Get dependencies, then build'
   
 - script: |
+    SONARCLOUDDIR=/tmp
+    wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.2.0.1227-linux.zip -O $SONARCLOUDDIR/sonar.zip
+    unzip $SONARCLOUDDIR/sonar.zip -d /tmp
+    ls -al $SONARCLOUDDIR
+    cat $SONARCLOUDDIR/sonar-scanner-3.2.0.1227-linux/conf/sonar-scanner.properties
+    #echo sonar.host.url=http://localhost:8080 > $SONARCLOUDDIR/sonar-scanner-3.2.0.1227-linux/conf/sonar-scanner.properties
+    #cat $SONARCLOUDDIR/sonar-scanner-3.2.0.1227-linux/conf/sonar-scanner.properties
+    PATH=$SONARCLOUDDIR/sonar-scanner-3.2.0.1227-linux/bin:$PATH
+    echo $PATH
+    sonar-scanner -h
+    #cat $SONARCLOUDDIR/sonar-scanner-3.2.0.1227-linux/sonar-project.properties
+    #sonar-scanner
+    sonar-scanner \
+    -Dsonar.projectKey=wilee \
+    -Dsonar.organization=monch1962-github \
+    -Dsonar.sources=. \
+    -Dsonar.host.url=https://sonarcloud.io \
+    -Dsonar.login=bc2d9a98b4ce222ae3df1b1c25c0a63a47933603
+  displayName: 'Run sonarcloud code quality tests'
+  
+- script: |
     go test
   workingDirectory: '$(modulePath)'
   displayName: 'Run unit tests'
