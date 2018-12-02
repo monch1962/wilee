@@ -359,18 +359,20 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 				if err != nil {
 					log.Fatalf("Error compiling regex for expect.%s", k)
 				}
+
+				var expectNotEqualActualMsg = "expect.* doesn't match actual.*"
 				switch actualValue.(type) {
 				case int:
 					if !r.MatchString(string(actualValue.(int))) {
-						return false, "expect.* doesn't match actual.*", nil
+						return false, expectNotEqualActualMsg, nil
 					}
 				case float64:
 					if !r.MatchString(fmt.Sprintf("%f", actualValue.(float64))) {
-						return false, "expect.* doesn't match actual.*", nil
+						return false, expectNotEqualActualMsg, nil
 					}
 				case string:
 					if !r.MatchString(string(actualValue.(string))) {
-						return false, "expect.* doesn't match actual.*", nil
+						return false, expectNotEqualActualMsg, nil
 					}
 				}
 			}
