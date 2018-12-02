@@ -162,10 +162,20 @@ func populateRequest(tc testCase) (testInfo, request, expect, error) {
 	return *testinfo, *request, *expect, nil
 }
 
+func stringInArray(str string, list []string) bool {
+	for _, v := range list {
+		if v == str {
+			return true
+		}
+	}
+	return false
+}
+
 // executeRequest executes the JSON request defined in the test case, and captures & returns
 // the response body, response headers, HTTP status and latency
 func executeRequest(request request) (interface{}, interface{}, int, time.Duration, error) {
-	if request.Verb != "GET" && request.Verb != "POST" && request.Verb != "PUT" && request.Verb != "DELETE" && request.Verb != "HEAD" && request.Verb != "PATCH" {
+	validVerbs := []string{"GET", "POST", "PUT", "DELETE", "HEAD", "PATCH"}
+	if stringInArray(request.Verb, validVerbs) {
 		return nil, nil, 0, 0, errors.New("request.verb must be one of GET, POST, PUT, DELETE, HEAD, PATCH")
 	}
 	httpClient := &http.Client{}
