@@ -19,6 +19,33 @@ import (
 	displayHelp()
 }*/
 
+func TestPopulateRequest(t *testing.T) {
+	var tc testCase
+	tc.TestInfo.ID = "abc"
+	tc.TestInfo.Description = "def"
+	tc.TestInfo.Version = "1.99"
+	tc.Request.Verb = "GET"
+	testInfo, request, expect, _ := populateRequest(tc)
+	log.Printf("testInfo: %v\n", testInfo)
+	log.Printf("request: %v\n", request)
+	log.Printf("expect: %v\n", expect)
+	if testInfo.ID != "abc" {
+		t.Log("populateRequest() not working - testInfo.ID not being populated")
+		t.Fail()
+	}
+	if testInfo.Description != "def" {
+		t.Log("populateRequest() not working - testInfo.Description not being populated")
+		t.Fail()
+	}
+	if testInfo.Version != "1.99" {
+		t.Log("populateRequest() not working - testInfo.Version not being populated")
+		t.Fail()
+	}
+	if request.Verb != "GET" {
+		t.Log("populateRequest() not working - request.Verb not being populated")
+		t.Fail()
+	}
+}
 func TestValidateIdenticalHTTPcodes(t *testing.T) {
 	var expect expect
 	var actual actual
@@ -30,6 +57,38 @@ func TestValidateIdenticalHTTPcodes(t *testing.T) {
 	}
 }
 
+func TestDebugOn(t *testing.T) {
+	os.Setenv("DEBUG", "1")
+	if !debug() {
+		t.Log("debug() not working - doesn't return true when DEBUG='1'")
+		t.Fail()
+	}
+}
+
+func TestStringInArrayTrue(t *testing.T) {
+	s := "abc"
+	arr := []string{"34", "abc", "56"}
+	if !stringInArray(s, arr) {
+		t.Log("stringInArray() not working - doesn't return true when string is in array")
+		t.Fail()
+	}
+}
+
+func TestStringInArrayFalse(t *testing.T) {
+	s := "abc"
+	arr := []string{"34", "def", "56"}
+	if stringInArray(s, arr) {
+		t.Log("stringInArray() not working - doesn't return false when string isn't in array")
+		t.Fail()
+	}
+}
+
+func TestDebugOff(t *testing.T) {
+	os.Setenv("DEBUG", "")
+	if debug() {
+		t.Log("debug() not working - doesn't return false when DEBUG=''")
+	}
+}
 func TestValidateDifferentHTTPcodes(t *testing.T) {
 	var expect expect
 	var actual actual
@@ -41,6 +100,28 @@ func TestValidateDifferentHTTPcodes(t *testing.T) {
 	}
 }
 
+func TestValidateMaxLatencyTrue(t *testing.T) {
+	var expect expect
+	var actual actual
+	expect.MaxLatencyMS = 50
+	actual.LatencyMS = 30
+	if !validateMaxLatency(expect, actual) {
+		t.Log("validateMaxLatency() not working - it doesn't return true with expect.MaxLatencyMS < actual.LatencyMS")
+		t.Fail()
+	}
+}
+
+func TestValidateMaxLatencyFalse(t *testing.T) {
+	var expect expect
+	var actual actual
+	expect.MaxLatencyMS = 30
+	actual.LatencyMS = 50
+	if validateMaxLatency(expect, actual) {
+		t.Log("validateMaxLatency() not working - it doesn't return false with expect.MaxLatencyMS > actual.LatencyMS")
+		t.Fail()
+	}
+}
+
 func TestLoadValidJSON(t *testing.T) {
 	testJSONfile := "demo/jsonplaceholder.typicode.com/test-cases/jsonplaceholder-test.json"
 	fileHandle, err := os.Open(testJSONfile)
@@ -48,6 +129,7 @@ func TestLoadValidJSON(t *testing.T) {
 		t.Logf("test data file %v not found", testJSONfile)
 		t.Fail()
 	}
+	os.Setenv("DEBUG", "1")
 	_, err = readTestCaseJSON(fileHandle)
 	if err != nil {
 		t.Logf("Unable to parse test data file %v as JSON", testJSONfile)
@@ -56,6 +138,7 @@ func TestLoadValidJSON(t *testing.T) {
 }
 
 func TestLoadBrokenJSON(t *testing.T) {
+	os.Setenv("DEBUG", "1")
 	brokenJSONfile := "demo/jsonplaceholder.typicode.com/test-cases/invalid/broken-json.json"
 	fileHandle, err := os.Open(brokenJSONfile)
 	if err != nil {
