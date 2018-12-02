@@ -29,6 +29,29 @@ func TestLogResponseHeaders(t *testing.T) {
 	t.Log("logResponseHeaders() is executing OK")
 }
 
+func TestPopulateHTTPRequestHeaders(t *testing.T) {
+	var req http.Request
+	var headers []header
+	os.Setenv("DEBUG", "1")
+	req2 := populateHTTPRequestHeaders(&req, headers)
+	//log.Printf("req2: %v\n", req2)
+	if req2 != &req {
+		t.Log("populateHTTPRequestHeaders() not working - adding no headers changes request")
+		t.Fail()
+	}
+	var h header
+	h.Header = "content-type"
+	h.Value = "application/json"
+	headers = []header{h}
+	req2 = populateHTTPRequestHeaders(&req, headers)
+	//t.Log("here2")
+	//log.Printf("req2: %v\n", req2)
+	if req2 != &req {
+		t.Log("populateHTTPRequestHeaders() not working - adding no headers changes request")
+		t.Fail()
+	}
+}
+
 func TestPopulateRequest(t *testing.T) {
 	var tc testCase
 	tc.TestInfo.ID = "abc"
