@@ -296,19 +296,17 @@ func JSONCompare(actual []byte, expect []byte) jsondiff.Difference {
 // expected response, and returns a boolean indicating whether the match was
 // good or bad
 func compareActualVersusExpected(actual actual, expect expect) (bool, string, error) {
-	if expect.HTTPCode != 0 {
-		if expect.HTTPCode != actual.HTTPCode {
-			errText := fmt.Sprintf("actual.HTTPCode doesn't match expect.HTTPCode. Expected %d, got %d", expect.HTTPCode, actual.HTTPCode)
-			//return false, "actual.HTTPCode doesn't match expect.HTTPCode (expected %s, got %s)", nil
-			return false, errText, nil
-		}
+	if expect.HTTPCode != 0 && expect.HTTPCode != actual.HTTPCode {
+		errText := fmt.Sprintf("actual.HTTPCode doesn't match expect.HTTPCode. Expected %d, got %d", expect.HTTPCode, actual.HTTPCode)
+		//return false, "actual.HTTPCode doesn't match expect.HTTPCode (expected %s, got %s)", nil
+		return false, errText, nil
 	}
-	if expect.MaxLatencyMS != 0 {
-		if expect.MaxLatencyMS < actual.LatencyMS {
-			errText := fmt.Sprintf("actual.latency_ms (%d) > expect.max_latency_ms (%d)", actual.LatencyMS, expect.MaxLatencyMS)
-			return false, errText, nil
-		}
+
+	if expect.MaxLatencyMS != 0 && expect.MaxLatencyMS < actual.LatencyMS {
+		errText := fmt.Sprintf("actual.latency_ms (%d) > expect.max_latency_ms (%d)", actual.LatencyMS, expect.MaxLatencyMS)
+		return false, errText, nil
 	}
+
 	switch expect.ParseAs {
 	case "":
 		// if there's no parser defined, return false; this is a viable approach
@@ -537,7 +535,7 @@ func main() {
 
 		var helpPtr = flag.Bool("help", false, "Display help")
 		flag.Parse()
-		if *helpPtr == true {
+		if *helpPtr {
 			displayHelp()
 			os.Exit(0)
 		}
