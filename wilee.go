@@ -337,17 +337,29 @@ func compareJSONSchema(expect expect, actual actual) bool {
 	return true
 }
 
+func validateHTTPcodes(expect expect, actual actual) bool {
+	if expect.HTTPCode != 0 && expect.HTTPCode != actual.HTTPCode {
+		return false
+	}
+	return true
+}
+
+func validateMaxLatency(expect expect, actual actual) bool {
+	if expect.MaxLatencyMS != 0 && expect.MaxLatencyMS < actual.LatencyMS {
+		return false
+	}
+	return true
+}
+
 // compareActualVersusExpected compares the actual response against the
 // expected response, and returns a boolean indicating whether the match was
 // good or bad
 func compareActualVersusExpected(actual actual, expect expect) (bool, string, error) {
-	if expect.HTTPCode != 0 && expect.HTTPCode != actual.HTTPCode {
+	if !validateHTTPcodes(expect, actual) {
 		errText := fmt.Sprintf("actual.HTTPCode doesn't match expect.HTTPCode. Expected %d, got %d", expect.HTTPCode, actual.HTTPCode)
-		//return false, "actual.HTTPCode doesn't match expect.HTTPCode (expected %s, got %s)", nil
 		return false, errText, nil
 	}
-
-	if expect.MaxLatencyMS != 0 && expect.MaxLatencyMS < actual.LatencyMS {
+	if !validateMaxLatency(expect, actual) {
 		errText := fmt.Sprintf("actual.latency_ms (%d) > expect.max_latency_ms (%d)", actual.LatencyMS, expect.MaxLatencyMS)
 		return false, errText, nil
 	}
@@ -358,23 +370,6 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 		// for simply collecting info about an API response but not a test case
 		return false, "expect.parse_as not defined", nil
 	case "json_schema":
-		/*if expect.Body != nil {
-			expectLoader := gojsonschema.NewGoLoader(expect)
-			actualLoader := gojsonschema.NewGoLoader(actual)
-			result, err := gojsonschema.Validate(expectLoader, actualLoader)
-			if err != nil {
-				log.Println("Error running JSON schema validation")
-				panic(err.Error())
-			}
-			if !result.Valid() {
-				fmt.Fprintln(os.Stderr, "JSON schema validation of response failed")
-				for _, desc := range result.Errors() {
-					fmt.Printf("- %s\n", desc)
-				}
-				return false, "JSON schema validation of response failed", nil
-			}
-			return true, "", nil
-		}*/
 		if compareJSONSchema(expect, actual) {
 			return true, "", nil
 		}
