@@ -40,18 +40,18 @@ steps:
     unzip $SONARCLOUDDIR/sonar.zip -d /tmp
     ls -al $SONARCLOUDDIR
     cat $SONARCLOUDDIR/sonar-scanner-3.2.0.1227-linux/conf/sonar-scanner.properties
-    #echo sonar.host.url=http://localhost:8080 > $SONARCLOUDDIR/sonar-scanner-3.2.0.1227-linux/conf/sonar-scanner.properties
-    #cat $SONARCLOUDDIR/sonar-scanner-3.2.0.1227-linux/conf/sonar-scanner.properties
     PATH=$SONARCLOUDDIR/sonar-scanner-3.2.0.1227-linux/bin:$PATH
     echo $PATH
     sonar-scanner -h
-    #cat $SONARCLOUDDIR/sonar-scanner-3.2.0.1227-linux/sonar-project.properties
-    #sonar-scanner
-    find . -name wilee.go
-    go test -coverprofile=coverage.out
-    go vet 2> govet-report.out
-    golint > golint-report.out
-    gometalinter > gometalinter-report.out
+    # Run Go code checks and store the results where they can be used by Sonarcloud
+    PWD=$(pwd)
+    cd $(find . -name wilee.go | sed 's/wilee.go//g')
+    go test -coverprofile=$PWD/coverage.out
+    go vet 2> $PWD/govet-report.out
+    golint > $PWD/golint-report.out
+    gometalinter > $PWD/gometalinter-report.out
+    ls -l
+    cd $PWD
     ls -l
     sonar-scanner \
     -Dsonar.projectKey=wilee \
