@@ -6,6 +6,41 @@ import (
 	"testing"
 )
 
+/*func TestAssembleHTTPParameterString(t *testing.T) {
+	var paramValues parameter
+	log.Printf("%s\n", paramValues)
+	paramValues = append(paramValues, map[string][string]{"key": ["value"]})
+	log.Printf("%s\n", paramValues)
+
+	//t.Fail()
+}*/
+
+func TestHelp(t *testing.T) {
+	displayHelp()
+}
+
+func TestValidateIdenticalHTTPcodes(t *testing.T) {
+	var expect expect
+	var actual actual
+	expect.HTTPCode = 200
+	actual.HTTPCode = 200
+	if !validateHTTPcodes(expect, actual) {
+		t.Log("validateHTTPcodes not working - doesn't return true when codes are identical")
+		t.Fail()
+	}
+}
+
+func TestValidateDifferentHTTPcodes(t *testing.T) {
+	var expect expect
+	var actual actual
+	expect.HTTPCode = 200
+	actual.HTTPCode = 300
+	if validateHTTPcodes(expect, actual) {
+		t.Log("validateHTTPcodes not working - doesn't return false when codes are different")
+		t.Fail()
+	}
+}
+
 func TestLoadValidJSON(t *testing.T) {
 	testJSONfile := "demo/jsonplaceholder.typicode.com/test-cases/jsonplaceholder-test.json"
 	fileHandle, err := os.Open(testJSONfile)
