@@ -49,7 +49,6 @@ type testInfo struct {
 	DateUpdated string   `json:"date_uploaded"`
 	Author      string   `json:"author"`
 	Tags        []string `json:"tags"`
-	//Content json.RawMessage `json:"content"`
 }
 
 type payload struct {
@@ -65,19 +64,19 @@ type request struct {
 }
 
 type expect struct {
-	ParseAs      string `json:"parse_as"`
-	HTTPCode     int    `json:"http_code"`
-	MaxLatencyMS int64  `json:"max_latency_ms"`
-	//Headers      []header `json:"headers"`
-	Headers json.RawMessage `json:"headers"`
-	Body    interface{}     `json:"body"`
+	ParseAs      string          `json:"parse_as"`
+	HTTPCode     int             `json:"http_code"`
+	MaxLatencyMS int64           `json:"max_latency_ms"`
+	Headers      json.RawMessage `json:"headers"`
+	Body         interface{}     `json:"body"`
 }
 
 type actual struct {
 	HTTPCode  int             `json:"http_code"`
 	LatencyMS int64           `json:"latency_ms"`
 	Headers   json.RawMessage `json:"headers"`
-	Body      json.RawMessage `json:"body"`
+	//Body      json.RawMessage `json:"body"`
+	Body interface{} `json:"body"`
 }
 
 type testResult struct {
@@ -97,8 +96,14 @@ type testCase struct {
 }
 
 type testCaseAwsAPIGatewayEvent struct {
-	//TestCase testCase `json:"queryStringParameters"`
 	TestCase string `json:"queryStringParameters"`
+}
+
+func debug() bool {
+	if os.Getenv("DEBUG") != "" {
+		return true
+	}
+	return false
 }
 
 // readTestCaseJSON reads a JSON testcase from an io.Reader and returns it as a formatted Go
@@ -115,7 +120,7 @@ func readTestCaseJSON(input io.Reader) (testCase, error) {
 		log.Printf("Error parsing content as JSON")
 		return ti, errors.New("Error parsing content as JSON")
 	}
-	if os.Getenv("DEBUG") != "" {
+	if debug() {
 		log.Printf("testcase: %v\n", ti)
 		log.Printf("testcase.request.payload.body: %v\n", ti.Request.Payload.Body)
 		log.Printf("testcase.request.payload.headers: %v\n", ti.Request.Payload.Headers)
@@ -133,10 +138,8 @@ func populateRequest(tc testCase) (testInfo, request, expect, error) {
 		Version:     tc.TestInfo.Version,
 		DateUpdated: tc.TestInfo.DateUpdated,
 		Author:      tc.TestInfo.Author,
-		//Content: tc.TestInfo.Content,
 	}
 
-	//var requestPayload payload
 	requestPayload := payload{
 		Headers:    tc.Request.Payload.Headers,
 		Body:       tc.Request.Payload.Body,
@@ -167,11 +170,11 @@ func executeRequest(request request) (interface{}, interface{}, int, time.Durati
 	}
 	httpClient := &http.Client{}
 	var httpParamString strings.Builder
-	if os.Getenv("DEBUG") != "" {
+	if debug() {
 		log.Printf("req.Payload.Parameters: %v\n", request.Payload.Parameters)
 	}
 	for _, param := range request.Payload.Parameters {
-		if os.Getenv("DEBUG") != "" {
+		if debug() {
 			log.Printf("param: %s\n", param)
 		}
 
@@ -184,12 +187,12 @@ func executeRequest(request request) (interface{}, interface{}, int, time.Durati
 		httpParamString.WriteString("=")
 		httpParamString.WriteString(html.UnescapeString(string(param.Value[0])))
 	}
-	if os.Getenv("DEBUG") != "" {
+	if debug() {
 		log.Printf("httpParamString: %s\n", httpParamString.String())
 	}
 
 	unescapedURL := request.URL + httpParamString.String()
-	if os.Getenv("DEBUG") != "" {
+	if debug() {
 		log.Printf("unescapedURL: %s\n", unescapedURL)
 	}
 	req, err := http.NewRequest(request.Verb, unescapedURL, nil)
@@ -199,40 +202,32 @@ func executeRequest(request request) (interface{}, interface{}, int, time.Durati
 		//log.Fatalln(err)
 	}
 	for _, headerEntry := range request.Payload.Headers {
-		if os.Getenv("DEBUG") != "" {
+		if debug() {
 			log.Printf("request header: %v\n", headerEntry)
 		}
 		k := headerEntry.Header
 		v := headerEntry.Value
-		if os.Getenv("DEBUG") != "" {
+		if debug() {
 			log.Printf("request header key: %v\n", k)
 			log.Printf("request header value: %v\n", v)
 		}
 		req.Header.Set(k, v)
 	}
-	if os.Getenv("DEBUG") != "" {
+	if debug() {
 		log.Printf("req.Payload.Body: %s\n", request.Payload.Body)
 	}
 	if request.Payload.Body != nil && !reflect.ValueOf(request.Payload.Body).IsNil() {
 
 		body, _ := json.Marshal(request.Payload.Body)
-		if os.Getenv("DEBUG") != "" {
+		if debug() {
 			log.Printf("body: %s\n", body)
 		}
 		bodyReader := bytes.NewReader(body)
 		bodyReadCloser := ioutil.NopCloser(bodyReader)
 		req.Body = bodyReadCloser
-		if os.Getenv("DEBUG") != "" {
+		if debug() {
 			log.Printf("httpRequest: %v\n", req)
 		}
-		/*resp, err := httpClient.Do(req)
-		if err != nil {
-			log.Println("Error getting response from outgoing http/https request")
-			log.Printf("%v\n", err)
-			os.Exit(1)
-		}
-		//duration := time.Since(startTime)
-		//return resp, duration, nil*/
 	}
 	startTime := time.Now()
 	resp, err := httpClient.Do(req)
@@ -249,7 +244,7 @@ func executeRequest(request request) (interface{}, interface{}, int, time.Durati
 		log.Fatalln(err)
 		return nil, nil, 0, 0, errors.New("Unable to parse HTTP response body as JSON")
 	}
-	if os.Getenv("DEBUG") != "" {
+	if debug() {
 		log.Printf("v\n%v\n", v)
 		log.Println(resp.Header)
 
@@ -291,7 +286,7 @@ func JSONCompare(actual []byte, expect []byte) jsondiff.Difference {
 	opts := jsondiff.DefaultConsoleOptions()
 	opts.PrintTypes = true
 	jsonDifference, _ := jsondiff.Compare(actual, expect, &opts)
-	if os.Getenv("DEBUG") != "" {
+	if debug() {
 		log.Printf("JSONCompare difference: %s\n", jsonDifference)
 	}
 	return jsonDifference
@@ -301,7 +296,6 @@ func JSONCompare(actual []byte, expect []byte) jsondiff.Difference {
 // expected response, and returns a boolean indicating whether the match was
 // good or bad
 func compareActualVersusExpected(actual actual, expect expect) (bool, string, error) {
-	//log.Printf("expect.HTTPCode:%d\n", expect.HTTPCode)
 	if expect.HTTPCode != 0 {
 		if expect.HTTPCode != actual.HTTPCode {
 			errText := fmt.Sprintf("actual.HTTPCode doesn't match expect.HTTPCode. Expected %d, got %d", expect.HTTPCode, actual.HTTPCode)
@@ -325,12 +319,10 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 			expectLoader := gojsonschema.NewGoLoader(expect)
 			actualLoader := gojsonschema.NewGoLoader(actual)
 			result, err := gojsonschema.Validate(expectLoader, actualLoader)
-			//log.Println("Here")
 			if err != nil {
 				log.Println("Error running JSON schema validation")
 				panic(err.Error())
 			}
-			//log.Printf("result.Valid(): %v\n", result.Valid())
 			if !result.Valid() {
 				fmt.Fprintln(os.Stderr, "JSON schema validation of response failed")
 				for _, desc := range result.Errors() {
@@ -345,22 +337,22 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 		// in the "expected" part of the test case
 		//log.Printf("expect.Body:%v\n", expect.Body)
 		var actualBodyStruct interface{}
-		err := json.Unmarshal(actual.Body, &actualBodyStruct)
+		err := json.Unmarshal(actual.Body.(json.RawMessage), &actualBodyStruct)
 		if err != nil {
 			return false, "", errors.New("Unable to parse actual.Body")
 		}
-		if os.Getenv("DEBUG") != "" {
+		if debug() {
 			log.Printf("actual.Body:%s\n\n", actual.Body)
 			log.Printf("actualBodyStruct: %v\n", actualBodyStruct)
 		}
 		if expect.Body != nil {
 			for k, expectRegex := range expect.Body.(map[string]interface{}) {
-				if os.Getenv("DEBUG") != "" {
+				if debug() {
 					log.Printf("expect[%s]->%v\n", k, expectRegex)
 				}
 
 				actualValue := actualBodyStruct.(map[string]interface{})[k]
-				if os.Getenv("DEBUG") != "" {
+				if debug() {
 					log.Printf("actual[%s]->%v\n", k, actualValue)
 					log.Printf("actual.(type): %T\n", actualValue)
 				}
@@ -391,13 +383,13 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 		// we want the actual response fields to be an exact match to the "expected" fields
 		// defined in the test case, but the "expected" fields may not contain all the fields in
 		// the actual response
-		if os.Getenv("DEBUG") != "" {
+		if debug() {
 			log.Printf("expect: %s\n", expect.Body)
 			log.Printf("actual: %s\n", actual.Body)
 		}
 		if expect.Body != nil {
 			expectJSON, _ := json.Marshal(expect.Body)
-			difference := JSONCompare(actual.Body, expectJSON)
+			difference := JSONCompare(actual.Body.(json.RawMessage), expectJSON)
 			if difference != jsondiff.FullMatch {
 				return false, "expect.body is not a subset of actual.body", nil
 			}
@@ -407,13 +399,13 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 		// we want the actual response fields to be an exact match to the "expected" fields
 		// defined in the test case, but the "expected" fields may not contain all the fields in
 		// the actual response
-		if os.Getenv("DEBUG") != "" {
+		if debug() {
 			log.Printf("expect: %s\n", expect.Body)
 			log.Printf("actual: %s\n", actual.Body)
 		}
 		if expect.Body != nil {
 			expectJSON, _ := json.Marshal(expect.Body)
-			difference := JSONCompare(actual.Body, expectJSON)
+			difference := JSONCompare(actual.Body.(json.RawMessage), expectJSON)
 			if difference != jsondiff.SupersetMatch && difference != jsondiff.FullMatch {
 				return false, "expect.body is not a subset of actual.body", nil
 			}
@@ -503,7 +495,6 @@ func HandleRequest(reqEvent events.APIGatewayProxyRequest) (events.APIGatewayPro
 	requestStr, _ := json.Marshal(reqEvent.Body)
 	log.Printf("request: %s\n", requestStr)
 	tc, err := readTestCaseJSON(strings.NewReader(reqEvent.Body))
-	//tc, err := readTestCaseJSON(testFile)
 	if err != nil {
 		log.Println("Unable to read test case JSON input")
 		os.Exit(1)
