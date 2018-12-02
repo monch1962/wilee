@@ -628,6 +628,15 @@ func displayHelp() {
 	fmt.Println("  $ APP=http://localhost:8000 TESTCASES=tests/test*.json MAX_CONCURRENCY=3 wilee")
 	fmt.Println("will run all test cases defined in tests/test*.json, but no more than 3 will run concurrently.")
 }
+
+func maxConcurrency() int {
+	maxConcurrent, err := strconv.Atoi(os.Getenv("MAX_CONCURRENT"))
+	if err != nil {
+		return 1
+	}
+	return maxConcurrent
+}
+
 func main() {
 	switch okerlund.IsLambdaEnv() {
 	case true:
@@ -647,10 +656,7 @@ func main() {
 			testcases := os.Getenv("TESTCASES")
 			testCaseFilesGlob, _ := filepath.Glob(testcases)
 
-			maxConcurrent, err := strconv.Atoi(os.Getenv("MAX_CONCURRENT"))
-			if err != nil {
-				maxConcurrent = 1
-			}
+			maxConcurrent := maxConcurrency()
 			log.Printf("Max concurrency = %d\n", maxConcurrent)
 			numTestCases := len(testCaseFilesGlob)
 			log.Printf("# test cases to execute = %d\n", numTestCases)
