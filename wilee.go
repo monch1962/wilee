@@ -275,9 +275,6 @@ func executeRequest(request request) (interface{}, interface{}, int, time.Durati
 		log.Printf("v\n%v\n", v)
 		log.Println(resp.Header)
 
-		/*for i := range resp.Header {
-			log.Printf("%v->%v\n", i, resp.Header[i][0])
-		}*/
 		logResponseHeaders(resp)
 	}
 	headers := resp.Header
