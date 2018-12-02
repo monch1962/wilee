@@ -30,6 +30,38 @@ func TestValidateIdenticalHTTPcodes(t *testing.T) {
 	}
 }
 
+func TestDebugOn(t *testing.T) {
+	os.Setenv("DEBUG", "1")
+	if !debug() {
+		t.Log("debug() not working - doesn't return true when DEBUG='1'")
+		t.Fail()
+	}
+}
+
+func TestStringInArrayTrue(t *testing.T) {
+	s := "abc"
+	arr := []string{"34", "abc", "56"}
+	if !stringInArray(s, arr) {
+		t.Log("stringInArray() not working - doesn't return true when string is in array")
+		t.Fail()
+	}
+}
+
+func TestStringInArrayFalse(t *testing.T) {
+	s := "abc"
+	arr := []string{"34", "def", "56"}
+	if stringInArray(s, arr) {
+		t.Log("stringInArray() not working - doesn't return false when string isn't in array")
+		t.Fail()
+	}
+}
+
+func TestDebugOff(t *testing.T) {
+	os.Setenv("DEBUG", "")
+	if debug() {
+		t.Log("debug() not working - doesn't return false when DEBUG=''")
+	}
+}
 func TestValidateDifferentHTTPcodes(t *testing.T) {
 	var expect expect
 	var actual actual
@@ -37,6 +69,28 @@ func TestValidateDifferentHTTPcodes(t *testing.T) {
 	actual.HTTPCode = 300
 	if validateHTTPcodes(expect, actual) {
 		t.Log("validateHTTPcodes not working - doesn't return false when codes are different")
+		t.Fail()
+	}
+}
+
+func TestValidateMaxLatencyTrue(t *testing.T) {
+	var expect expect
+	var actual actual
+	expect.MaxLatencyMS = 50
+	actual.LatencyMS = 30
+	if !validateMaxLatency(expect, actual) {
+		t.Log("validateMaxLatency() not working - it doesn't return true with expect.MaxLatencyMS < actual.LatencyMS")
+		t.Fail()
+	}
+}
+
+func TestValidateMaxLatencyFalse(t *testing.T) {
+	var expect expect
+	var actual actual
+	expect.MaxLatencyMS = 30
+	actual.LatencyMS = 50
+	if validateMaxLatency(expect, actual) {
+		t.Log("validateMaxLatency() not working - it doesn't return false with expect.MaxLatencyMS > actual.LatencyMS")
 		t.Fail()
 	}
 }
