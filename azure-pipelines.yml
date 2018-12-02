@@ -47,6 +47,7 @@ steps:
     sonar-scanner -h
     #cat $SONARCLOUDDIR/sonar-scanner-3.2.0.1227-linux/sonar-project.properties
     #sonar-scanner
+    find . -name wilee.go
     go test -coverprofile=coverage.out
     go vet 2> govet-report.out
     golint > golint-report.out
