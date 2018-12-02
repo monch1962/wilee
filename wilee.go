@@ -317,6 +317,26 @@ func JSONCompare(actual []byte, expect []byte) jsondiff.Difference {
 	return jsonDifference
 }
 
+func compareJSONSchema(expect expect, actual actual) bool {
+	if expect.Body != nil {
+		expectLoader := gojsonschema.NewGoLoader(expect)
+		actualLoader := gojsonschema.NewGoLoader(actual)
+		result, err := gojsonschema.Validate(expectLoader, actualLoader)
+		if err != nil {
+			log.Println("Error running JSON schema validation")
+			panic(err.Error())
+		}
+		if !result.Valid() {
+			fmt.Fprintln(os.Stderr, "JSON schema validation of response failed")
+			for _, desc := range result.Errors() {
+				fmt.Printf("- %s\n", desc)
+			}
+			return false
+		}
+	}
+	return true
+}
+
 // compareActualVersusExpected compares the actual response against the
 // expected response, and returns a boolean indicating whether the match was
 // good or bad
@@ -338,7 +358,7 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 		// for simply collecting info about an API response but not a test case
 		return false, "expect.parse_as not defined", nil
 	case "json_schema":
-		if expect.Body != nil {
+		/*if expect.Body != nil {
 			expectLoader := gojsonschema.NewGoLoader(expect)
 			actualLoader := gojsonschema.NewGoLoader(actual)
 			result, err := gojsonschema.Validate(expectLoader, actualLoader)
@@ -354,7 +374,11 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 				return false, "JSON schema validation of response failed", nil
 			}
 			return true, "", nil
+		}*/
+		if compareJSONSchema(expect, actual) {
+			return true, "", nil
 		}
+		return false, "JSON schema validation of response failed", nil
 	case "regex":
 		// we want to parse the actual content against regex patterns that are defined
 		// in the "expected" part of the test case
@@ -439,7 +463,7 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 	default:
 		return false, "", errors.New("expect.parse_as should be one of 'regex', 'exact_match', 'partial_match', 'json_schema'")
 	}
-	return false, "???", nil
+	//return false, "???", nil
 }
 
 func executeTestCase(testFile *os.File, resultsFile *os.File) {
