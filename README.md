@@ -2,6 +2,21 @@
 
 App designed to execute REST API functional test cases that have been encoded as JSON documents
 
+[![Build Status](https://dev.azure.com/monch1962/monch1962/_apis/build/status/monch1962.wilee)](https://dev.azure.com/monch1962/monch1962/_build/latest?definitionId=2)
+
+![Build Status](https://sonarcloud.io/api/project_badges/measure?project=wilee&metric=alert_status)
+![Build Status](https://sonarcloud.io/api/project_badges/measure?project=wilee&metric=bugs)
+![Build Status](https://sonarcloud.io/api/project_badges/measure?project=wilee&metric=code_smells)
+![Build Status](https://sonarcloud.io/api/project_badges/measure?project=wilee&metric=coverage)
+![Build Status](https://sonarcloud.io/api/project_badges/measure?project=wilee&metric=duplicated_lines_density)
+![Build Status](https://sonarcloud.io/api/project_badges/measure?project=wilee&metric=ncloc)
+![Build Status](https://sonarcloud.io/api/project_badges/measure?project=wilee&metric=sqale_rating)
+![Build Status](https://sonarcloud.io/api/project_badges/measure?project=wilee&metric=alert_status)
+![Build Status](https://sonarcloud.io/api/project_badges/measure?project=wilee&metric=reliability_rating)
+![Build Status](https://sonarcloud.io/api/project_badges/measure?project=wilee&metric=security_rating)
+![Build Status](https://sonarcloud.io/api/project_badges/measure?project=wilee&metric=sqale_index)
+![Build Status](https://sonarcloud.io/api/project_badges/measure?project=wilee&metric=vulnerabilities)
+
 ## Quick start
 Assuming you've got [Go](https://golang.org/) installed:
 ```
