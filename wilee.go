@@ -209,6 +209,12 @@ func populateHTTPRequestHeaders(req *http.Request, headers []header) *http.Reque
 	return req
 }
 
+func logResponseHeaders(response *http.Response) {
+	for i := range response.Header {
+		log.Printf("%v->%v\n", i, response.Header[i][0])
+	}
+}
+
 // executeRequest executes the JSON request defined in the test case, and captures & returns
 // the response body, response headers, HTTP status and latency
 func executeRequest(request request) (interface{}, interface{}, int, time.Duration, error) {
@@ -232,18 +238,7 @@ func executeRequest(request request) (interface{}, interface{}, int, time.Durati
 		return nil, nil, 0, 0, errors.New("Unable to parse HTTP request")
 		//log.Fatalln(err)
 	}
-	/*for _, headerEntry := range request.Payload.Headers {
-		if debug() {
-			log.Printf("request header: %v\n", headerEntry)
-		}
-		k := headerEntry.Header
-		v := headerEntry.Value
-		if debug() {
-			log.Printf("request header key: %v\n", k)
-			log.Printf("request header value: %v\n", v)
-		}
-		req.Header.Set(k, v)
-	}*/
+
 	req = populateHTTPRequestHeaders(req, request.Payload.Headers)
 	if debug() {
 		log.Printf("req.Payload.Body: %s\n", request.Payload.Body)
@@ -280,9 +275,10 @@ func executeRequest(request request) (interface{}, interface{}, int, time.Durati
 		log.Printf("v\n%v\n", v)
 		log.Println(resp.Header)
 
-		for i := range resp.Header {
+		/*for i := range resp.Header {
 			log.Printf("%v->%v\n", i, resp.Header[i][0])
-		}
+		}*/
+		logResponseHeaders(resp)
 	}
 	headers := resp.Header
 	httpCode := resp.StatusCode
