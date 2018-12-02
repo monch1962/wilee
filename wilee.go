@@ -361,15 +361,15 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 				}
 				switch actualValue.(type) {
 				case int:
-					if r.MatchString(string(actualValue.(int))) != true {
+					if !r.MatchString(string(actualValue.(int))) {
 						return false, "expect.* doesn't match actual.*", nil
 					}
 				case float64:
-					if r.MatchString(fmt.Sprintf("%f", actualValue.(float64))) != true {
+					if !r.MatchString(fmt.Sprintf("%f", actualValue.(float64))) {
 						return false, "expect.* doesn't match actual.*", nil
 					}
 				case string:
-					if r.MatchString(string(actualValue.(string))) != true {
+					if !r.MatchString(string(actualValue.(string))) {
 						return false, "expect.* doesn't match actual.*", nil
 					}
 				}
