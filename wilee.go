@@ -171,19 +171,9 @@ func stringInArray(str string, list []string) bool {
 	return false
 }
 
-// executeRequest executes the JSON request defined in the test case, and captures & returns
-// the response body, response headers, HTTP status and latency
-func executeRequest(request request) (interface{}, interface{}, int, time.Duration, error) {
-	validVerbs := []string{"GET", "POST", "PUT", "DELETE", "HEAD", "PATCH"}
-	if stringInArray(request.Verb, validVerbs) {
-		return nil, nil, 0, 0, errors.New("request.verb must be one of GET, POST, PUT, DELETE, HEAD, PATCH")
-	}
-	httpClient := &http.Client{}
+func assembleHTTPParamString(parameters []parameter) string {
 	var httpParamString strings.Builder
-	if debug() {
-		log.Printf("req.Payload.Parameters: %v\n", request.Payload.Parameters)
-	}
-	for _, param := range request.Payload.Parameters {
+	for _, param := range parameters {
 		if debug() {
 			log.Printf("param: %s\n", param)
 		}
@@ -200,8 +190,23 @@ func executeRequest(request request) (interface{}, interface{}, int, time.Durati
 	if debug() {
 		log.Printf("httpParamString: %s\n", httpParamString.String())
 	}
+	return httpParamString.String()
+}
 
-	unescapedURL := request.URL + httpParamString.String()
+// executeRequest executes the JSON request defined in the test case, and captures & returns
+// the response body, response headers, HTTP status and latency
+func executeRequest(request request) (interface{}, interface{}, int, time.Duration, error) {
+	validVerbs := []string{"GET", "POST", "PUT", "DELETE", "HEAD", "PATCH"}
+	if stringInArray(request.Verb, validVerbs) {
+		return nil, nil, 0, 0, errors.New("request.verb must be one of GET, POST, PUT, DELETE, HEAD, PATCH")
+	}
+	httpClient := &http.Client{}
+	if debug() {
+		log.Printf("req.Payload.Parameters: %v\n", request.Payload.Parameters)
+	}
+	var httpParamString string
+	httpParamString = assembleHTTPParamString(request.Payload.Parameters)
+	unescapedURL := request.URL + httpParamString
 	if debug() {
 		log.Printf("unescapedURL: %s\n", unescapedURL)
 	}
