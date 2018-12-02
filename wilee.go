@@ -351,6 +351,67 @@ func validateMaxLatency(expect expect, actual actual) bool {
 	return true
 }
 
+func unmarshalActualBody(actual actual) (interface{}, error) {
+	var actualBodyStruct interface{}
+	err := json.Unmarshal(actual.Body.(json.RawMessage), &actualBodyStruct)
+	if err != nil {
+		return nil, errors.New("Unable to parse actual.Body")
+	}
+	if debug() {
+		log.Printf("actual.Body:%s\n\n", actual.Body)
+		log.Printf("actualBodyStruct: %v\n", actualBodyStruct)
+	}
+	return actualBodyStruct, nil
+}
+
+func compareRegex(expect expect, actual actual) (bool, string, error) {
+	actualBodyStruct, err := unmarshalActualBody(actual)
+	if err != nil {
+		return false, "", errors.New("Unable to parse actual.Body")
+	}
+	if debug() {
+		log.Printf("actual.Body:%s\n\n", actual.Body)
+		log.Printf("actualBodyStruct: %v\n", actualBodyStruct)
+	}
+	if expect.Body != nil {
+		for k, expectRegex := range expect.Body.(map[string]interface{}) {
+			if debug() {
+				log.Printf("expect[%s]->%v\n", k, expectRegex)
+			}
+
+			actualValue := actualBodyStruct.(map[string]interface{})[k]
+			if debug() {
+				log.Printf("actual[%s]->%v\n", k, actualValue)
+				log.Printf("actual.(type): %T\n", actualValue)
+			}
+
+			r, err := regexp.Compile(expectRegex.(string))
+			if err != nil {
+				log.Fatalf("Error compiling regex for expect.%s", k)
+			}
+
+			var expectNotEqualActualMsg = "expect.* doesn't match actual.*"
+			switch actualValue.(type) {
+			case int:
+				if !r.MatchString(string(actualValue.(int))) {
+					return false, expectNotEqualActualMsg, nil
+				}
+			case float64:
+				if !r.MatchString(fmt.Sprintf("%f", actualValue.(float64))) {
+					return false, expectNotEqualActualMsg, nil
+				}
+			case string:
+				if !r.MatchString(string(actualValue.(string))) {
+					return false, expectNotEqualActualMsg, nil
+				}
+			}
+		}
+	}
+
+	return true, "", nil
+
+}
+
 // compareActualVersusExpected compares the actual response against the
 // expected response, and returns a boolean indicating whether the match was
 // good or bad
@@ -378,14 +439,9 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 		// we want to parse the actual content against regex patterns that are defined
 		// in the "expected" part of the test case
 		//log.Printf("expect.Body:%v\n", expect.Body)
-		var actualBodyStruct interface{}
-		err := json.Unmarshal(actual.Body.(json.RawMessage), &actualBodyStruct)
+		actualBodyStruct, err := unmarshalActualBody(actual)
 		if err != nil {
 			return false, "", errors.New("Unable to parse actual.Body")
-		}
-		if debug() {
-			log.Printf("actual.Body:%s\n\n", actual.Body)
-			log.Printf("actualBodyStruct: %v\n", actualBodyStruct)
 		}
 		if expect.Body != nil {
 			for k, expectRegex := range expect.Body.(map[string]interface{}) {
@@ -572,11 +628,20 @@ func displayHelp() {
 	fmt.Println("  $ APP=http://localhost:8000 TESTCASES=tests/test*.json MAX_CONCURRENCY=3 wilee")
 	fmt.Println("will run all test cases defined in tests/test*.json, but no more than 3 will run concurrently.")
 }
+
+func maxConcurrency() int {
+	maxConcurrent, err := strconv.Atoi(os.Getenv("MAX_CONCURRENT"))
+	if err != nil {
+		return 1
+	}
+	return maxConcurrent
+}
+
 func main() {
-	if okerlund.IsLambdaEnv() {
-		// code is running inside an AWS Lambda environment; process requests accordingly
+	switch okerlund.IsLambdaEnv() {
+	case true:
 		lambda.Start(HandleRequest)
-	} else {
+	case false:
 		//log.Printf("Not running in Lambda env\n")
 
 		var helpPtr = flag.Bool("help", false, "Display help")
@@ -591,10 +656,7 @@ func main() {
 			testcases := os.Getenv("TESTCASES")
 			testCaseFilesGlob, _ := filepath.Glob(testcases)
 
-			maxConcurrent, err := strconv.Atoi(os.Getenv("MAX_CONCURRENT"))
-			if err != nil {
-				maxConcurrent = 1
-			}
+			maxConcurrent := maxConcurrency()
 			log.Printf("Max concurrency = %d\n", maxConcurrent)
 			numTestCases := len(testCaseFilesGlob)
 			log.Printf("# test cases to execute = %d\n", numTestCases)

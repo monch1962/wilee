@@ -15,9 +15,9 @@ import (
 	//t.Fail()
 }*/
 
-func TestHelp(t *testing.T) {
+/*func TestHelp(t *testing.T) {
 	displayHelp()
-}
+}*/
 
 func TestValidateIdenticalHTTPcodes(t *testing.T) {
 	var expect expect
