@@ -439,7 +439,7 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 		// we want to parse the actual content against regex patterns that are defined
 		// in the "expected" part of the test case
 		//log.Printf("expect.Body:%v\n", expect.Body)
-		actualBodyStruct, err := unmarshalActualBody(actual)
+		/*actualBodyStruct, err := unmarshalActualBody(actual)
 		if err != nil {
 			return false, "", errors.New("Unable to parse actual.Body")
 		}
@@ -476,9 +476,10 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 					}
 				}
 			}
-		}
+		}*/
+		return compareRegex(expect, actual)
 
-		return true, "", nil
+		//return true, "", nil
 	case "exact_match":
 		// we want the actual response fields to be an exact match to the "expected" fields
 		// defined in the test case, but the "expected" fields may not contain all the fields in
