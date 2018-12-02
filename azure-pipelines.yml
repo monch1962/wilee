@@ -35,6 +35,7 @@ steps:
   displayName: 'Get dependencies, then build'
   
 - script: |
+    go test -coverprofile=coverage.out
     SONARCLOUDDIR=/tmp
     wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.2.0.1227-linux.zip -O $SONARCLOUDDIR/sonar.zip
     unzip $SONARCLOUDDIR/sonar.zip -d /tmp
@@ -50,6 +51,7 @@ steps:
     sonar-scanner \
     -Dsonar.projectKey=wilee \
     -Dsonar.organization=monch1962-github \
+    -Dsonar.go.coverage.reportPaths=. \
     -Dsonar.sources=. \
     -Dsonar.exclusions=gopath/pkg/dep/** \
     -Dsonar.host.url=https://sonarcloud.io \
