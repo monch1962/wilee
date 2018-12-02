@@ -16,6 +16,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:9cc09cd40fd8ba8550052765e34738b99ef7380acea0d7fda4ec9a49b1f41684"
+  name = "github.com/fnproject/fdk-go"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "26ed643bea6837eb6ca757e0d98155b42e13e1dc"
+
+[[projects]]
+  branch = "master"
   digest = "1:6df637324dba7c3328f8c472437a50f93acd3ca9ce092f8749757fc25fcfb85f"
   name = "github.com/monch1962/okerlund"
   packages = ["."]
@@ -68,6 +76,7 @@
   input-imports = [
     "github.com/aws/aws-lambda-go/events",
     "github.com/aws/aws-lambda-go/lambda",
+    "github.com/fnproject/fdk-go",
     "github.com/monch1962/okerlund",
     "github.com/nsf/jsondiff",
     "github.com/remeh/sizedwaitgroup",

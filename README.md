@@ -208,7 +208,7 @@ and you'll get a file named 'wilee' that'll run on your Linux container. It *WON
 
 To quickly test your new wilee executable, try running on your non-Windows box
 ```
-$ APP="https://jsonplaceholder.typicode.com" wilee < test-cases/jsonplaceholder-test.json
+$ APP="https://jsonplaceholder.typicode.com" wilee < demo/jsonplaceholder.typicode.com/test-cases/jsonplaceholder-test.json
 ```
 
 Assuming you've got Internet access, this will run a test against the https://jsonplaceholder.typicode.com site, and return a blob of JSON. Feel free to scroll through the output to see what's there...

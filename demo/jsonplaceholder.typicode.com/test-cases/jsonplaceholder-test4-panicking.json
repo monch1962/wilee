@@ -1,0 +1,20 @@
+{
+  "test_info": {
+    "id": "get monkeys????",
+    "description": "Test hitting jsonplaceholder JSON API",
+    "version": "1",
+    "author": "David Mitchell",
+    "tags": [
+      "negative"
+    ]
+  },
+  "request": {
+    "verb": "GET",
+    "url": "/monkeys"
+  },
+  "expect": {
+    "max_latency_ms": 120000,
+    "parse_as": "regex",
+    "http_code": 404
+  }
+}
