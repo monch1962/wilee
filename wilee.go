@@ -466,35 +466,11 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 		// we want the actual response fields to be an exact match to the "expected" fields
 		// defined in the test case, but the "expected" fields may not contain all the fields in
 		// the actual response
-		/*if debug() {
-			log.Printf("expect: %s\n", expect.Body)
-			log.Printf("actual: %s\n", actual.Body)
-		}
-		if expect.Body != nil {
-			expectJSON, _ := json.Marshal(expect.Body)
-			difference := JSONCompare(actual.Body.(json.RawMessage), expectJSON)
-			if difference != jsondiff.FullMatch {
-				return false, "expect.body is not a subset of actual.body", nil
-			}
-		}
-		return true, "", nil*/
 		return compareJSON(expect, actual, "exact_match")
 	case "partial_match":
 		// we want the actual response fields to be an exact match to the "expected" fields
 		// defined in the test case, but the "expected" fields may not contain all the fields in
 		// the actual response
-		/*if debug() {
-			log.Printf("expect: %s\n", expect.Body)
-			log.Printf("actual: %s\n", actual.Body)
-		}
-		if expect.Body != nil {
-			expectJSON, _ := json.Marshal(expect.Body)
-			difference := JSONCompare(actual.Body.(json.RawMessage), expectJSON)
-			if difference != jsondiff.SupersetMatch && difference != jsondiff.FullMatch {
-				return false, "expect.body is not a subset of actual.body", nil
-			}
-		}
-		return true, "", nil*/
 		return compareJSON(expect, actual, "partial_match")
 	default:
 		return false, "", errors.New("expect.parse_as should be one of 'regex', 'exact_match', 'partial_match', 'json_schema'")
@@ -638,7 +614,6 @@ func executeRequestedTestcases() {
 	// exiting so we define a WaitGroup
 
 	// Using sizedwaitgroup instead of sync.WaitGroup gives me an easy way to limit concurrency
-	//var wg sync.WaitGroup
 	wg := sizedwaitgroup.New(maxConcurrent)
 
 	for _, testCaseFile := range testCaseFilesGlob {
@@ -654,7 +629,6 @@ func executeRequestedTestcases() {
 		}
 
 		// add this new test case to the wait group
-		//wg.Add(1) -- need to change the syntax now we're using sizedwaitgroup...
 		wg.Add()
 		go executeTestCaseInWaitGroup(fTestCase, fTestResults, &wg)
 	}
