@@ -193,6 +193,22 @@ func assembleHTTPParamString(parameters []parameter) string {
 	return httpParamString.String()
 }
 
+func populateHTTPRequestHeaders(req *http.Request, headers []header) *http.Request {
+	for _, h := range headers {
+		if debug() {
+			log.Printf("request header: %v\n", h)
+		}
+		k := h.Header
+		v := h.Value
+		if debug() {
+			log.Printf("request header key: %v\n", k)
+			log.Printf("request header value: %v\n", v)
+		}
+		req.Header.Set(k, v)
+	}
+	return req
+}
+
 // executeRequest executes the JSON request defined in the test case, and captures & returns
 // the response body, response headers, HTTP status and latency
 func executeRequest(request request) (interface{}, interface{}, int, time.Duration, error) {
@@ -216,7 +232,7 @@ func executeRequest(request request) (interface{}, interface{}, int, time.Durati
 		return nil, nil, 0, 0, errors.New("Unable to parse HTTP request")
 		//log.Fatalln(err)
 	}
-	for _, headerEntry := range request.Payload.Headers {
+	/*for _, headerEntry := range request.Payload.Headers {
 		if debug() {
 			log.Printf("request header: %v\n", headerEntry)
 		}
@@ -227,7 +243,8 @@ func executeRequest(request request) (interface{}, interface{}, int, time.Durati
 			log.Printf("request header value: %v\n", v)
 		}
 		req.Header.Set(k, v)
-	}
+	}*/
+	req = populateHTTPRequestHeaders(req, request.Payload.Headers)
 	if debug() {
 		log.Printf("req.Payload.Body: %s\n", request.Payload.Body)
 	}
