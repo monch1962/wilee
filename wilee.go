@@ -439,47 +439,7 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 		// we want to parse the actual content against regex patterns that are defined
 		// in the "expected" part of the test case
 		//log.Printf("expect.Body:%v\n", expect.Body)
-		/*actualBodyStruct, err := unmarshalActualBody(actual)
-		if err != nil {
-			return false, "", errors.New("Unable to parse actual.Body")
-		}
-		if expect.Body != nil {
-			for k, expectRegex := range expect.Body.(map[string]interface{}) {
-				if debug() {
-					log.Printf("expect[%s]->%v\n", k, expectRegex)
-				}
-
-				actualValue := actualBodyStruct.(map[string]interface{})[k]
-				if debug() {
-					log.Printf("actual[%s]->%v\n", k, actualValue)
-					log.Printf("actual.(type): %T\n", actualValue)
-				}
-
-				r, err := regexp.Compile(expectRegex.(string))
-				if err != nil {
-					log.Fatalf("Error compiling regex for expect.%s", k)
-				}
-
-				var expectNotEqualActualMsg = "expect.* doesn't match actual.*"
-				switch actualValue.(type) {
-				case int:
-					if !r.MatchString(string(actualValue.(int))) {
-						return false, expectNotEqualActualMsg, nil
-					}
-				case float64:
-					if !r.MatchString(fmt.Sprintf("%f", actualValue.(float64))) {
-						return false, expectNotEqualActualMsg, nil
-					}
-				case string:
-					if !r.MatchString(string(actualValue.(string))) {
-						return false, expectNotEqualActualMsg, nil
-					}
-				}
-			}
-		}*/
 		return compareRegex(expect, actual)
-
-		//return true, "", nil
 	case "exact_match":
 		// we want the actual response fields to be an exact match to the "expected" fields
 		// defined in the test case, but the "expected" fields may not contain all the fields in
@@ -515,7 +475,6 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 	default:
 		return false, "", errors.New("expect.parse_as should be one of 'regex', 'exact_match', 'partial_match', 'json_schema'")
 	}
-	//return false, "???", nil
 }
 
 func executeTestCase(testFile *os.File, resultsFile *os.File) {
@@ -638,6 +597,48 @@ func maxConcurrency() int {
 	return maxConcurrent
 }
 
+func executeRequestedTestcases() {
+	// filenames for test cases to run are contained in the env var TESTCASES
+	// which can contain regexes
+	testcases := os.Getenv("TESTCASES")
+	testCaseFilesGlob, _ := filepath.Glob(testcases)
+
+	maxConcurrent := maxConcurrency()
+	log.Printf("Max concurrency = %d\n", maxConcurrent)
+	numTestCases := len(testCaseFilesGlob)
+	log.Printf("# test cases to execute = %d\n", numTestCases)
+
+	// we're going to run all these test cases in parallel in separate
+	// goroutines...
+	// ... but we also want to wait till all of them have finished before
+	// exiting so we define a WaitGroup
+
+	// Using sizedwaitgroup instead of sync.WaitGroup gives me an easy way to limit concurrency
+	//var wg sync.WaitGroup
+	wg := sizedwaitgroup.New(maxConcurrent)
+
+	for _, testCaseFile := range testCaseFilesGlob {
+		log.Printf("Running test case from file: %v\n", testCaseFile)
+		fTestCase, err := os.Open(testCaseFile)
+		if err != nil {
+			log.Printf("Error opening test case file %v\n", testCaseFile)
+		}
+		testResultsFile := testCaseFile + ".result.json"
+		fTestResults, err := os.Create(testResultsFile)
+		if err != nil {
+			log.Printf("Error opening test case results file %v\n", testResultsFile)
+		}
+
+		// add this new test case to the wait group
+		//wg.Add(1) -- need to change the syntax now we're using sizedwaitgroup...
+		wg.Add()
+		go executeTestCaseInWaitGroup(fTestCase, fTestResults, &wg)
+	}
+
+	// wait here till all test cases have finished executing
+	wg.Wait()
+}
+
 func main() {
 	switch okerlund.IsLambdaEnv() {
 	case true:
@@ -652,45 +653,7 @@ func main() {
 			os.Exit(0)
 		}
 		if os.Getenv("TESTCASES") != "" {
-			// filenames for test cases to run are contained in the env var TESTCASES
-			// which can contain regexes
-			testcases := os.Getenv("TESTCASES")
-			testCaseFilesGlob, _ := filepath.Glob(testcases)
-
-			maxConcurrent := maxConcurrency()
-			log.Printf("Max concurrency = %d\n", maxConcurrent)
-			numTestCases := len(testCaseFilesGlob)
-			log.Printf("# test cases to execute = %d\n", numTestCases)
-
-			// we're going to run all these test cases in parallel in separate
-			// goroutines...
-			// ... but we also want to wait till all of them have finished before
-			// exiting so we define a WaitGroup
-
-			// Using sizedwaitgroup instead of sync.WaitGroup gives me an easy way to limit concurrency
-			//var wg sync.WaitGroup
-			wg := sizedwaitgroup.New(maxConcurrent)
-
-			for _, testCaseFile := range testCaseFilesGlob {
-				log.Printf("Running test case from file: %v\n", testCaseFile)
-				fTestCase, err := os.Open(testCaseFile)
-				if err != nil {
-					log.Printf("Error opening test case file %v\n", testCaseFile)
-				}
-				testResultsFile := testCaseFile + ".result.json"
-				fTestResults, err := os.Create(testResultsFile)
-				if err != nil {
-					log.Printf("Error opening test case results file %v\n", testResultsFile)
-				}
-
-				// add this new test case to the wait group
-				//wg.Add(1) -- need to change the syntax now we're using sizedwaitgroup...
-				wg.Add()
-				go executeTestCaseInWaitGroup(fTestCase, fTestResults, &wg)
-			}
-
-			// wait here till all test cases have finished executing
-			wg.Wait()
+			executeRequestedTestcases()
 		} else {
 			// no testcase files supplied in env var TESTCASES
 			// read a single test case from stdin, and write test results to stdout
