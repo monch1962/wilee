@@ -407,9 +407,31 @@ func compareRegex(expect expect, actual actual) (bool, string, error) {
 			}
 		}
 	}
-
 	return true, "", nil
+}
 
+func compareJSON(expect expect, actual actual, comparisonType string) (bool, string, error) {
+	if debug() {
+		log.Printf("expect: %s\n", expect.Body)
+		log.Printf("actual: %s\n", actual.Body)
+	}
+	if expect.Body != nil {
+		expectJSON, _ := json.Marshal(expect.Body)
+		difference := JSONCompare(actual.Body.(json.RawMessage), expectJSON)
+		switch comparisonType {
+		case "partial_match":
+			if difference != jsondiff.FullMatch {
+				return false, "expect.body is not a subset of actual.body", nil
+			}
+		case "exact_match":
+			if difference != jsondiff.SupersetMatch {
+				return false, "expect.body is not a subset of actual.body", nil
+			}
+		default:
+			return false, "invalid comparison type - should be 'exact_match' or 'partial_match'", nil
+		}
+	}
+	return true, "", nil
 }
 
 // compareActualVersusExpected compares the actual response against the
@@ -444,7 +466,7 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 		// we want the actual response fields to be an exact match to the "expected" fields
 		// defined in the test case, but the "expected" fields may not contain all the fields in
 		// the actual response
-		if debug() {
+		/*if debug() {
 			log.Printf("expect: %s\n", expect.Body)
 			log.Printf("actual: %s\n", actual.Body)
 		}
@@ -455,12 +477,13 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 				return false, "expect.body is not a subset of actual.body", nil
 			}
 		}
-		return true, "", nil
+		return true, "", nil*/
+		return compareJSON(expect, actual, "exact_match")
 	case "partial_match":
 		// we want the actual response fields to be an exact match to the "expected" fields
 		// defined in the test case, but the "expected" fields may not contain all the fields in
 		// the actual response
-		if debug() {
+		/*if debug() {
 			log.Printf("expect: %s\n", expect.Body)
 			log.Printf("actual: %s\n", actual.Body)
 		}
@@ -471,7 +494,8 @@ func compareActualVersusExpected(actual actual, expect expect) (bool, string, er
 				return false, "expect.body is not a subset of actual.body", nil
 			}
 		}
-		return true, "", nil
+		return true, "", nil*/
+		return compareJSON(expect, actual, "partial_match")
 	default:
 		return false, "", errors.New("expect.parse_as should be one of 'regex', 'exact_match', 'partial_match', 'json_schema'")
 	}
