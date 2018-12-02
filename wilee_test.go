@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"testing"
 )
@@ -16,9 +17,17 @@ import (
 	//t.Fail()
 }*/
 
-/*func TestHelp(t *testing.T) {
+func TestHelp(t *testing.T) {
 	displayHelp()
-}*/
+	t.Log("displayHelp() is executing OK")
+}
+
+func TestLogResponseHeaders(t *testing.T) {
+	var resp http.Response
+	//resp.Headers.Set("abc", "123")
+	logResponseHeaders(&resp)
+	t.Log("logResponseHeaders() is executing OK")
+}
 
 func TestPopulateRequest(t *testing.T) {
 	var tc testCase
