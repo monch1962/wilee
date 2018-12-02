@@ -47,10 +47,20 @@ steps:
     sonar-scanner -h
     #cat $SONARCLOUDDIR/sonar-scanner-3.2.0.1227-linux/sonar-project.properties
     #sonar-scanner
+    go test -coverprofile=coverage.out
+    go vet 2> govet-report.out
+    golint > golint-report.out
+    gometalinter > gometalinter-report.out
+    ls -l
     sonar-scanner \
     -Dsonar.projectKey=wilee \
     -Dsonar.organization=monch1962-github \
+    -Dsonar.go.coverage.reportPaths=coverage.out \
+    -Dsonar.go.govet.reportPaths=govet-report.out \
+    -Dsonar.go.golint.reportPaths=golint-report.out \
+    -Dsonar.go.gometalinter.reportPaths=gometalinter-report.out \
     -Dsonar.sources=. \
+    -Dsonar.exclusions=gopath/pkg/dep/** \
     -Dsonar.host.url=https://sonarcloud.io \
     -Dsonar.login=bc2d9a98b4ce222ae3df1b1c25c0a63a47933603
   displayName: 'Run sonarcloud code quality tests'
