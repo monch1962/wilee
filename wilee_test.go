@@ -19,6 +19,33 @@ import (
 	displayHelp()
 }*/
 
+func TestPopulateRequest(t *testing.T) {
+	var tc testCase
+	tc.TestInfo.ID = "abc"
+	tc.TestInfo.Description = "def"
+	tc.TestInfo.Version = "1.99"
+	tc.Request.Verb = "GET"
+	testInfo, request, expect, _ := populateRequest(tc)
+	log.Printf("testInfo: %v\n", testInfo)
+	log.Printf("request: %v\n", request)
+	log.Printf("expect: %v\n", expect)
+	if testInfo.ID != "abc" {
+		t.Log("populateRequest() not working - testInfo.ID not being populated")
+		t.Fail()
+	}
+	if testInfo.Description != "def" {
+		t.Log("populateRequest() not working - testInfo.Description not being populated")
+		t.Fail()
+	}
+	if testInfo.Version != "1.99" {
+		t.Log("populateRequest() not working - testInfo.Version not being populated")
+		t.Fail()
+	}
+	if request.Verb != "GET" {
+		t.Log("populateRequest() not working - request.Verb not being populated")
+		t.Fail()
+	}
+}
 func TestValidateIdenticalHTTPcodes(t *testing.T) {
 	var expect expect
 	var actual actual
@@ -102,6 +129,7 @@ func TestLoadValidJSON(t *testing.T) {
 		t.Logf("test data file %v not found", testJSONfile)
 		t.Fail()
 	}
+	os.Setenv("DEBUG", "1")
 	_, err = readTestCaseJSON(fileHandle)
 	if err != nil {
 		t.Logf("Unable to parse test data file %v as JSON", testJSONfile)
@@ -110,6 +138,7 @@ func TestLoadValidJSON(t *testing.T) {
 }
 
 func TestLoadBrokenJSON(t *testing.T) {
+	os.Setenv("DEBUG", "1")
 	brokenJSONfile := "demo/jsonplaceholder.typicode.com/test-cases/invalid/broken-json.json"
 	fileHandle, err := os.Open(brokenJSONfile)
 	if err != nil {
