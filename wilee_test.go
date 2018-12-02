@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"testing"
@@ -82,6 +83,45 @@ func TestStringInArrayFalse(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestMaxConcurrency(t *testing.T) {
+	os.Setenv("MAX_CONCURRENT", "")
+	if maxConcurrency() != 1 {
+		t.Log("maxConcurrency() not working - doesn't return 1 when MAX_CONCURRENT not set")
+		t.Fail()
+	}
+	os.Setenv("MAX_CONCURRENT", "12")
+	if maxConcurrency() != 12 {
+		t.Log("maxConcurrency() not working - doesn't return 12 when MAX_CONCURRENT set to '12'")
+		result := maxConcurrency()
+		fmt.Printf("maxConcurrency: %v\n", result)
+		t.Fail()
+	}
+}
+
+/*func TestUnmarshalActualBody(t *testing.T) {
+	var a actual
+	log.Printf("a: %v\n", a)
+	response, _ := unmarshalActualBody(a)
+	log.Println("here3")
+	if response != nil {
+		t.Log("unmarshalActualBody() not working - doesn't return correct result")
+		t.Fail()
+	}
+	raw := json.RawMessage(`{"foo":"bar"}`)
+	var err error
+	a.Body, err = json.Marshal(&raw)
+	if err != nil {
+		log.Printf("error marshalling body")
+	}
+	log.Printf("a: %v\n", a)
+	response, _ := unmarshalActualBody(a)
+	log.Println("here3")
+	if response != "" {
+		t.Log("unmarshalActualBody() not working - doesn't return correct result")
+		t.Fail()
+	}
+}*/
 
 func TestAssembleHTTPParamString(t *testing.T) {
 	os.Setenv("DEBUG", "1")

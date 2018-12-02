@@ -61,7 +61,7 @@ steps:
     -Dsonar.go.golint.reportPaths=golint-report.out \
     -Dsonar.go.gometalinter.reportPaths=gometalinter-report.out \
     -Dsonar.sources=. \
-    -Dsonar.exclusions=gopath/pkg/dep/**,gopath/,gopath/src/wilee_test.go,./wilee_test.go \
+    -Dsonar.exclusions=gopath/pkg/dep/**,gopath/,gopath/src/wilee_test.go,wilee_test.go \
     -Dsonar.host.url=https://sonarcloud.io \
     -Dsonar.login=bc2d9a98b4ce222ae3df1b1c25c0a63a47933603
   displayName: 'Run sonarcloud code quality tests'
