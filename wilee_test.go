@@ -83,6 +83,37 @@ func TestStringInArrayFalse(t *testing.T) {
 	}
 }
 
+func TestAssembleHTTPParamString(t *testing.T) {
+	os.Setenv("DEBUG", "1")
+	var parameters []parameter
+	log.Printf("parameters: %v\n", parameters)
+	if assembleHTTPParamString(parameters) != "" {
+		t.Log("assembleHTTPParamString() not working - incorrect response when no parameters supplied")
+		t.Fail()
+	}
+	var p1 parameter
+	p1.Key = "abc"
+	p1.Value = []string{"123"}
+	log.Printf("p1: %v\n", p1)
+	//parameters.append(parameters, parameter)
+	parameters = []parameter{p1}
+	if assembleHTTPParamString(parameters) != "?abc=123" {
+		log.Printf("%s\n", assembleHTTPParamString(parameters))
+		t.Log("assembleHTTPParamString() not working - incorrect response when parameter supplied")
+		t.Fail()
+	}
+	var p2 parameter
+	p2.Key = "def"
+	p2.Value = []string{"456"}
+	log.Printf("p2: %v\n", p2)
+	parameters = []parameter{p1, p2}
+	if assembleHTTPParamString(parameters) != "?abc=123&def=456" {
+		log.Printf("%s\n", assembleHTTPParamString(parameters))
+		t.Log("assembleHTTPParamString() not working - incorrect response when parameter supplied")
+		t.Fail()
+	}
+}
+
 func TestDebugOff(t *testing.T) {
 	os.Setenv("DEBUG", "")
 	if debug() {
