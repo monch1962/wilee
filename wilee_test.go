@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"testing"
 )
@@ -15,9 +17,40 @@ import (
 	//t.Fail()
 }*/
 
-/*func TestHelp(t *testing.T) {
+func TestHelp(t *testing.T) {
 	displayHelp()
-}*/
+	t.Log("displayHelp() is executing OK")
+}
+
+func TestLogResponseHeaders(t *testing.T) {
+	var resp http.Response
+	//resp.Headers.Set("abc", "123")
+	logResponseHeaders(&resp)
+	t.Log("logResponseHeaders() is executing OK")
+}
+
+func TestPopulateHTTPRequestHeaders(t *testing.T) {
+	var req http.Request
+	var headers []header
+	os.Setenv("DEBUG", "1")
+	req2 := populateHTTPRequestHeaders(&req, headers)
+	//log.Printf("req2: %v\n", req2)
+	if req2 != &req {
+		t.Log("populateHTTPRequestHeaders() not working - adding no headers changes request")
+		t.Fail()
+	}
+	var h header
+	h.Header = "content-type"
+	h.Value = "application/json"
+	headers = []header{h}
+	req2 = populateHTTPRequestHeaders(&req, headers)
+	//t.Log("here2")
+	//log.Printf("req2: %v\n", req2)
+	if req2 != &req {
+		t.Log("populateHTTPRequestHeaders() not working - adding no headers changes request")
+		t.Fail()
+	}
+}
 
 func TestPopulateRequest(t *testing.T) {
 	var tc testCase
@@ -79,6 +112,76 @@ func TestStringInArrayFalse(t *testing.T) {
 	arr := []string{"34", "def", "56"}
 	if stringInArray(s, arr) {
 		t.Log("stringInArray() not working - doesn't return false when string isn't in array")
+		t.Fail()
+	}
+}
+
+func TestMaxConcurrency(t *testing.T) {
+	os.Setenv("MAX_CONCURRENT", "")
+	if maxConcurrency() != 1 {
+		t.Log("maxConcurrency() not working - doesn't return 1 when MAX_CONCURRENT not set")
+		t.Fail()
+	}
+	os.Setenv("MAX_CONCURRENT", "12")
+	if maxConcurrency() != 12 {
+		t.Log("maxConcurrency() not working - doesn't return 12 when MAX_CONCURRENT set to '12'")
+		result := maxConcurrency()
+		fmt.Printf("maxConcurrency: %v\n", result)
+		t.Fail()
+	}
+}
+
+/*func TestUnmarshalActualBody(t *testing.T) {
+	var a actual
+	log.Printf("a: %v\n", a)
+	response, _ := unmarshalActualBody(a)
+	log.Println("here3")
+	if response != nil {
+		t.Log("unmarshalActualBody() not working - doesn't return correct result")
+		t.Fail()
+	}
+	raw := json.RawMessage(`{"foo":"bar"}`)
+	var err error
+	a.Body, err = json.Marshal(&raw)
+	if err != nil {
+		log.Printf("error marshalling body")
+	}
+	log.Printf("a: %v\n", a)
+	response, _ := unmarshalActualBody(a)
+	log.Println("here3")
+	if response != "" {
+		t.Log("unmarshalActualBody() not working - doesn't return correct result")
+		t.Fail()
+	}
+}*/
+
+func TestAssembleHTTPParamString(t *testing.T) {
+	os.Setenv("DEBUG", "1")
+	var parameters []parameter
+	log.Printf("parameters: %v\n", parameters)
+	if assembleHTTPParamString(parameters) != "" {
+		t.Log("assembleHTTPParamString() not working - incorrect response when no parameters supplied")
+		t.Fail()
+	}
+	var p1 parameter
+	p1.Key = "abc"
+	p1.Value = []string{"123"}
+	log.Printf("p1: %v\n", p1)
+	//parameters.append(parameters, parameter)
+	parameters = []parameter{p1}
+	if assembleHTTPParamString(parameters) != "?abc=123" {
+		log.Printf("%s\n", assembleHTTPParamString(parameters))
+		t.Log("assembleHTTPParamString() not working - incorrect response when parameter supplied")
+		t.Fail()
+	}
+	var p2 parameter
+	p2.Key = "def"
+	p2.Value = []string{"456"}
+	log.Printf("p2: %v\n", p2)
+	parameters = []parameter{p1, p2}
+	if assembleHTTPParamString(parameters) != "?abc=123&def=456" {
+		log.Printf("%s\n", assembleHTTPParamString(parameters))
+		t.Log("assembleHTTPParamString() not working - incorrect response when parameter supplied")
 		t.Fail()
 	}
 }

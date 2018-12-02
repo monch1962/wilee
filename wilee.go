@@ -204,6 +204,9 @@ func populateHTTPRequestHeaders(req *http.Request, headers []header) *http.Reque
 			log.Printf("request header key: %v\n", k)
 			log.Printf("request header value: %v\n", v)
 		}
+		if req.Header == nil {
+			req.Header = make(http.Header)
+		}
 		req.Header.Set(k, v)
 	}
 	return req
