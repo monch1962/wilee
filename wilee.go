@@ -222,7 +222,7 @@ func logResponseHeaders(response *http.Response) {
 // the response body, response headers, HTTP status and latency
 func executeRequest(request request) (interface{}, interface{}, int, time.Duration, error) {
 	validVerbs := []string{"GET", "POST", "PUT", "DELETE", "HEAD", "PATCH"}
-	if stringInArray(request.Verb, validVerbs) {
+	if !stringInArray(request.Verb, validVerbs) {
 		return nil, nil, 0, 0, errors.New("request.verb must be one of GET, POST, PUT, DELETE, HEAD, PATCH")
 	}
 	httpClient := &http.Client{}
