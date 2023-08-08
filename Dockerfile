@@ -1,4 +1,4 @@
-FROM alpine:latest
+FROM alpine:3.18.3
 # Minimal Docker container for hosting wilee
 # (based on Alpine to make it as small as possible)
 #
