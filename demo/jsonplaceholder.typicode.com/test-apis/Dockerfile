@@ -6,7 +6,7 @@
 # To start
 # $ docker run -p 34567:3000 -d wilee-test-apis
 
-FROM node:alpine
+FROM node:23.11.1-alpine3.21
 WORKDIR /app
 COPY apis/apis.json .
 RUN npm install -g json-server
